@@ -1,6 +1,6 @@
 // ─────────────────────────────────────────────────────────────
 // MVP Backend — Vercel AI Gateway (imágenes)
-// Node 18+ requerido (fetch/FormData/Blob nativos). Sin dependencias.
+// Node 18+ requerido (fetch/FormData/Blob nativos).
 // Ejecutar: node server.js
 // ─────────────────────────────────────────────────────────────
 const http = require('http');
@@ -10,6 +10,7 @@ const path = require('path');
 const PORT = process.env.PORT || 3000;
 const HOST = process.env.HOST || '127.0.0.1';
 const GATEWAY = 'https://ai-gateway.vercel.sh/v1';
+const GA_MEASUREMENT_ID = process.env.GA_MEASUREMENT_ID || '';
 const MAX_BODY_BYTES = 20 * 1024 * 1024;
 const MAX_REFERENCE_IMAGES = 3;
 const MAX_PROMPT_CHARS = 5000;
@@ -22,6 +23,54 @@ const ALLOWED_MODELS = ['openai/gpt-image-2', 'google/gemini-3.1-flash-image', '
 const json = (res, status, payload) => {
   res.writeHead(status, { 'Content-Type': 'application/json' });
   res.end(JSON.stringify(payload));
+};
+
+const serveIndex = (res) => {
+  const html = fs
+    .readFileSync(path.join(__dirname, 'index.html'), 'utf8')
+    .replace('"__GA_MEASUREMENT_ID__"', JSON.stringify(GA_MEASUREMENT_ID));
+  res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
+  res.end(html);
+};
+
+const safeRequestContext = (payload = {}) => {
+  const images = Array.isArray(payload.images) ? payload.images : [];
+  const options = payload.options && typeof payload.options === 'object' && !Array.isArray(payload.options)
+    ? payload.options
+    : {};
+  return {
+    model: payload.model || '',
+    aspectRatio: payload.aspectRatio || '',
+    size: payload.size || '',
+    count: Math.max(1, Math.min(Number(payload.n) || 1, 4)),
+    hasReferences: images.length > 0,
+    referenceCount: images.length,
+    promptLength: typeof payload.prompt === 'string' ? payload.prompt.length : 0,
+    optionProviders: Object.keys(options).sort(),
+    quality: options.openai?.quality || '',
+    outputFormat: options.openai?.outputFormat || '',
+  };
+};
+
+const logBackendError = (error = {}, context = {}) => {
+  console.warn(JSON.stringify({
+    ts: new Date().toISOString(),
+    event: 'image_generation_error',
+    error: {
+      category: error.category || 'unknown',
+      status: error.status || 500,
+      code: error.code || '',
+      type: error.type || '',
+      requestId: error.requestId || '',
+      violations: error.violations || [],
+    },
+    context,
+  }));
+};
+
+const errorJson = (res, status, payload, context) => {
+  logBackendError(payload.error || {}, context);
+  return json(res, status, payload);
 };
 
 const extractMessage = (data) => {
@@ -83,6 +132,7 @@ const normalizeGatewayError = (status, data, headers) => {
       raw: rawMessage,
       code,
       type,
+      violations: extractSafetyViolations(rawMessage),
     },
   };
 };
@@ -168,8 +218,7 @@ const normalizeSdkError = (err) => {
 const server = http.createServer((req, res) => {
   // ── Servir el front ──
   if (req.method === 'GET' && (req.url === '/' || req.url === '/index.html')) {
-    res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
-    fs.createReadStream(path.join(__dirname, 'index.html')).pipe(res);
+    serveIndex(res);
     return;
   }
 
@@ -186,9 +235,17 @@ const server = http.createServer((req, res) => {
       }
     });
     req.on('end', async () => {
+      const requestStartedAt = Date.now();
+      let requestContext = {};
+      const errorForRequest = (status, payload) =>
+        errorJson(res, status, payload, {
+          ...requestContext,
+          durationMs: Date.now() - requestStartedAt,
+        });
+
       try {
         if (tooLarge) {
-          return json(res, 413, {
+          return errorForRequest(413, {
             error: {
               message: 'La solicitud es demasiado grande. Reducí la cantidad o tamaño de las imágenes de referencia.',
               category: 'payload_too_large',
@@ -201,7 +258,7 @@ const server = http.createServer((req, res) => {
         try {
           parsed = JSON.parse(body);
         } catch {
-          return json(res, 400, {
+          return errorForRequest(400, {
             error: {
               message: 'El cuerpo de la solicitud no es JSON válido.',
               category: 'bad_json',
@@ -211,19 +268,20 @@ const server = http.createServer((req, res) => {
         }
 
         const { apiKey, model, prompt, size, aspectRatio, n = 1, images = [], options = {} } = parsed;
+        requestContext = safeRequestContext(parsed);
 
         if (!apiKey) {
-          return json(res, 401, {
+          return errorForRequest(401, {
             error: { message: 'API Key requerida.', category: 'auth', status: 401 },
           });
         }
         if (!prompt) {
-          return json(res, 400, {
+          return errorForRequest(400, {
             error: { message: 'El prompt es obligatorio.', category: 'validation', status: 400 },
           });
         }
         if (prompt.length > MAX_PROMPT_CHARS) {
-          return json(res, 400, {
+          return errorForRequest(400, {
             error: {
               message: `El prompt no puede superar ${MAX_PROMPT_CHARS} caracteres.`,
               category: 'validation',
@@ -232,7 +290,7 @@ const server = http.createServer((req, res) => {
           });
         }
         if (!ALLOWED_MODELS.includes(model))
-          return json(res, 400, {
+          return errorForRequest(400, {
             error: {
               message: `Modelo no soportado: ${model}`,
               category: 'validation',
@@ -241,7 +299,7 @@ const server = http.createServer((req, res) => {
           });
 
         if (!Array.isArray(images)) {
-          return json(res, 400, {
+          return errorForRequest(400, {
             error: {
               message: 'Las imágenes de referencia deben enviarse como un array.',
               category: 'validation',
@@ -251,7 +309,7 @@ const server = http.createServer((req, res) => {
         }
 
         if (images.length > MAX_REFERENCE_IMAGES) {
-          return json(res, 400, {
+          return errorForRequest(400, {
             error: {
               message: `Máximo ${MAX_REFERENCE_IMAGES} imágenes de referencia.`,
               category: 'validation',
@@ -264,7 +322,7 @@ const server = http.createServer((req, res) => {
         for (const image of images) {
           const info = dataUrlInfo(image);
           if (!info) {
-            return json(res, 400, {
+            return errorForRequest(400, {
               error: {
                 message: 'Las imágenes de referencia deben ser data URLs base64 válidas.',
                 category: 'validation',
@@ -280,7 +338,7 @@ const server = http.createServer((req, res) => {
         const imagePrompt = referenceImages.length ? { text: prompt, images: referenceImages } : prompt;
 
         if (!IMAGE_ONLY_MODELS.has(model)) {
-          return json(res, 400, {
+          return errorForRequest(400, {
             error: {
               message: `El modelo ${model} todavía no está implementado en este flujo del AI SDK.`,
               category: 'validation',
@@ -302,7 +360,7 @@ const server = http.createServer((req, res) => {
             throw new Error('La versión instalada de ai no expone createGateway.');
           }
         } catch (err) {
-          return json(res, 500, {
+          return errorForRequest(500, {
             error: {
               message: 'Falta instalar la dependencia del AI SDK. Ejecutá npm install antes de iniciar el servidor.',
               category: 'missing_dependency',
@@ -326,12 +384,13 @@ const server = http.createServer((req, res) => {
             n: count,
           });
         } catch (err) {
-          return json(res, err?.statusCode || err?.status || 500, normalizeSdkError(err));
+          const payload = normalizeSdkError(err);
+          return errorForRequest(err?.statusCode || err?.status || 500, payload);
         }
 
         const resultImages = await collectGeneratedFiles(result.images);
         if (resultImages.length === 0) {
-          return json(res, 502, {
+          return errorForRequest(502, {
             error: {
               message: 'El gateway respondió correctamente, pero no devolvió imágenes.',
               category: 'empty_response',
@@ -347,7 +406,7 @@ const server = http.createServer((req, res) => {
           warnings: result.warnings || [],
         });
       } catch (err) {
-        json(res, 500, {
+        errorForRequest(500, {
           error: {
             message: 'No se pudo completar la generación.',
             category: 'server_error',
