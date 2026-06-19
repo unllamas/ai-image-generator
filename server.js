@@ -12,7 +12,7 @@ const HOST = process.env.HOST || '127.0.0.1';
 const GATEWAY = 'https://ai-gateway.vercel.sh/v1';
 const GA_MEASUREMENT_ID = process.env.GA_MEASUREMENT_ID || '';
 const MAX_BODY_BYTES = 20 * 1024 * 1024;
-const MAX_REFERENCE_IMAGES = 3;
+const MAX_REFERENCE_IMAGES = 5;
 const MAX_PROMPT_CHARS = 5000;
 const WEBP_QUALITY = 82;
 const IMAGE_ONLY_MODELS = new Set(['openai/gpt-image-2']);
@@ -35,9 +35,8 @@ const serveIndex = (res) => {
 
 const safeRequestContext = (payload = {}) => {
   const images = Array.isArray(payload.images) ? payload.images : [];
-  const options = payload.options && typeof payload.options === 'object' && !Array.isArray(payload.options)
-    ? payload.options
-    : {};
+  const options =
+    payload.options && typeof payload.options === 'object' && !Array.isArray(payload.options) ? payload.options : {};
   return {
     model: payload.model || '',
     aspectRatio: payload.aspectRatio || '',
@@ -53,19 +52,21 @@ const safeRequestContext = (payload = {}) => {
 };
 
 const logBackendError = (error = {}, context = {}) => {
-  console.warn(JSON.stringify({
-    ts: new Date().toISOString(),
-    event: 'image_generation_error',
-    error: {
-      category: error.category || 'unknown',
-      status: error.status || 500,
-      code: error.code || '',
-      type: error.type || '',
-      requestId: error.requestId || '',
-      violations: error.violations || [],
-    },
-    context,
-  }));
+  console.warn(
+    JSON.stringify({
+      ts: new Date().toISOString(),
+      event: 'image_generation_error',
+      error: {
+        category: error.category || 'unknown',
+        status: error.status || 500,
+        code: error.code || '',
+        type: error.type || '',
+        requestId: error.requestId || '',
+        violations: error.violations || [],
+      },
+      context,
+    }),
+  );
 };
 
 const errorJson = (res, status, payload, context) => {
