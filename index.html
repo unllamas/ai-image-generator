@@ -121,7 +121,7 @@
     </div>
 
     <!-- ── Modal de imagen ── -->
-    <div id="imageModal" class="fixed inset-0 z-50 hidden bg-black/90 p-4">
+    <div id="imageModal" class="fixed inset-0 z-50 hidden bg-black/90 p-3 md:p-6">
       <button
         id="closeModal"
         class="fixed top-4 right-4 z-10 bg-white text-black rounded-full w-10 h-10 text-xl leading-none hover:bg-neutral-200"
@@ -129,26 +129,64 @@
       >
         ×
       </button>
-      <div class="h-full max-w-6xl mx-auto flex flex-col items-center justify-center gap-4">
-        <img
-          id="modalImage"
-          alt="Imagen generada ampliada"
-          class="max-h-[82vh] max-w-full rounded-xl border border-neutral-800 object-contain"
-        />
-        <div class="fixed bottom-5 left-1/2 -translate-x-1/2 flex gap-2">
-          <a
-            id="modalDownload"
-            download="imagen-ia.webp"
-            class="bg-white text-black rounded-full px-4 py-2 text-sm font-medium hover:bg-neutral-200"
+      <div class="h-full max-w-6xl mx-auto flex items-center justify-center">
+        <div
+          class="w-full max-h-full overflow-y-auto md:overflow-hidden rounded-2xl border border-neutral-800 bg-neutral-950 shadow-2xl md:grid md:grid-cols-[minmax(0,1.35fr)_minmax(320px,0.65fr)]"
+        >
+          <div
+            class="min-h-0 bg-[repeating-linear-gradient(45deg,#1e1d1d_0_1px,transparent_1px_8px)] flex items-center justify-center p-3 md:p-6"
           >
-            Descargar
-          </a>
-          <button
-            id="modalEdit"
-            class="bg-neutral-800 text-white border border-neutral-700 rounded-full px-4 py-2 text-sm font-medium hover:bg-neutral-700"
-          >
-            Editar
-          </button>
+            <img
+              id="modalImage"
+              alt="Imagen generada ampliada"
+              class="max-h-[46vh] md:max-h-[76vh] max-w-full rounded-xl border border-neutral-800 object-contain bg-neutral-900"
+            />
+          </div>
+          <aside class="min-h-0 border-t md:border-t-0 md:border-l border-neutral-800 flex flex-col">
+            <div class="min-h-0 overflow-y-auto p-4 md:p-5 space-y-5">
+              <div class="space-y-2">
+                <p class="text-xs uppercase text-neutral-500">Modelo</p>
+                <p id="modalModel" class="text-sm font-medium text-white"></p>
+              </div>
+              <div class="space-y-2">
+                <p class="text-xs uppercase text-neutral-500">Prompt</p>
+                <p id="modalPrompt" class="max-h-40 overflow-y-auto text-sm leading-6 text-neutral-300"></p>
+              </div>
+              <dl class="grid grid-cols-2 gap-3 text-sm">
+                <div>
+                  <dt class="text-xs uppercase text-neutral-500">Aspect Ratio</dt>
+                  <dd id="modalAspectRatio" class="mt-1 text-white"></dd>
+                </div>
+                <div>
+                  <dt class="text-xs uppercase text-neutral-500">Calidad</dt>
+                  <dd id="modalQuality" class="mt-1 text-white"></dd>
+                </div>
+                <div>
+                  <dt class="text-xs uppercase text-neutral-500">Resolución</dt>
+                  <dd id="modalResolution" class="mt-1 text-white"></dd>
+                </div>
+                <div>
+                  <dt class="text-xs uppercase text-neutral-500">Tamaño</dt>
+                  <dd id="modalSize" class="mt-1 text-white"></dd>
+                </div>
+              </dl>
+            </div>
+            <div class="border-t border-neutral-800 p-4 md:p-5 flex gap-2 justify-end">
+              <a
+                id="modalDownload"
+                download="imagen-ia.webp"
+                class="bg-white text-black rounded-full px-4 py-2 text-sm font-medium hover:bg-neutral-200"
+              >
+                Descargar
+              </a>
+              <button
+                id="modalEdit"
+                class="bg-neutral-800 text-white border border-neutral-700 rounded-full px-4 py-2 text-sm font-medium hover:bg-neutral-700"
+              >
+                Editar
+              </button>
+            </div>
+          </aside>
         </div>
       </div>
     </div>
@@ -419,6 +457,9 @@
             class="block w-full text-left focus:outline-none focus:ring-2 focus:ring-white/40 rounded-xl">
             <img src="${escapeAttr(item.src)}" class="rounded-xl border border-neutral-800 w-full bg-neutral-900"/>
           </button>
+          <span class="pointer-events-none absolute top-2 left-2 max-w-[calc(100%-1rem)] truncate rounded-full bg-black/75 border border-white/10 px-2.5 py-1 text-[11px] font-medium text-white shadow">
+            ${escapeHtml(modelLabel(item.model))}
+          </span>
           <div class="absolute bottom-2 right-2 flex gap-2 opacity-0 group-hover:opacity-100 transition">
             <button type="button" data-edit-image="${escapeAttr(item.id)}"
               class="bg-black/70 px-3 py-1 rounded-lg text-xs">
@@ -443,6 +484,10 @@
           src,
           prompt: meta.prompt,
           model: meta.model,
+          aspectRatio: meta.aspectRatio,
+          quality: meta.quality,
+          resolution: meta.resolution,
+          size: meta.size,
           createdAt,
         }));
         generatedImages = [...items, ...generatedImages].slice(0, MAX_HISTORY);
@@ -470,6 +515,26 @@
 
       function escapeAttr(value) {
         return String(value).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+      }
+
+      function escapeHtml(value) {
+        return String(value).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+      }
+
+      function modelLabel(model) {
+        return (
+          {
+            'openai/gpt-image-2': 'GPT Image 2',
+            'google/gemini-3.1-flash-image': 'Gemini 3.1 Flash',
+            'google/gemini-3-pro-image': 'Gemini 3 Pro',
+          }[model] ||
+          model ||
+          'Modelo desconocido'
+        );
+      }
+
+      function qualityLabel(quality) {
+        return { low: 'Low', medium: 'Medium', high: 'High' }[quality] || quality || 'No disponible';
       }
 
       function collectOptions() {
@@ -501,7 +566,10 @@
         try {
           const model = $('model').value;
           const requestedCount = Number($('count').dataset.value);
-          const resolution = qualityToResolution($('quality').value);
+          const aspectRatio = $('ratio').dataset.value;
+          const quality = $('quality').value;
+          const resolution = qualityToResolution(quality);
+          const size = computeSize(aspectRatio, resolution);
           const startedAt = performance.now();
           addPending(requestedCount);
           trackEvent('generate_start', analyticsContext());
@@ -512,8 +580,8 @@
               apiKey,
               model,
               prompt,
-              size: computeSize($('ratio').dataset.value, resolution),
-              aspectRatio: $('ratio').dataset.value,
+              size,
+              aspectRatio,
               n: Number($('count').dataset.value),
               images: refImages,
               options: collectOptions(),
@@ -521,7 +589,7 @@
           });
           const data = await r.json();
           if (!r.ok) throw data.error || new Error('Error desconocido');
-          addGeneratedImages(data.images || [], { prompt, model });
+          addGeneratedImages(data.images || [], { prompt, model, aspectRatio, quality, resolution, size });
           trackEvent('generate_success', {
             ...analyticsContext(),
             image_count: (data.images || []).length,
@@ -588,6 +656,12 @@
         $('modalImage').src = item.src;
         $('modalDownload').href = item.src;
         $('modalDownload').download = downloadName(item);
+        $('modalModel').textContent = modelLabel(item.model);
+        $('modalPrompt').textContent = item.prompt || 'No disponible';
+        $('modalAspectRatio').textContent = item.aspectRatio || 'No disponible';
+        $('modalQuality').textContent = qualityLabel(item.quality);
+        $('modalResolution').textContent = item.resolution || 'No disponible';
+        $('modalSize').textContent = item.size || 'No disponible';
         $('imageModal').classList.remove('hidden');
         document.body.classList.add('overflow-hidden');
         trackEvent('image_modal_opened', analyticsContext());
@@ -597,6 +671,7 @@
         selectedImageId = null;
         $('imageModal').classList.add('hidden');
         $('modalImage').removeAttribute('src');
+        $('modalDownload').removeAttribute('href');
         document.body.classList.remove('overflow-hidden');
       }
 
