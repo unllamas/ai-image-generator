@@ -15,10 +15,52 @@ const MAX_BODY_BYTES = 20 * 1024 * 1024;
 const MAX_REFERENCE_IMAGES = 5;
 const MAX_PROMPT_CHARS = 5000;
 const WEBP_QUALITY = 82;
-const IMAGE_ONLY_MODELS = new Set(['openai/gpt-image-2']);
 
-// Modelos soportados (escalable: solo agregar aquí y en el front)
-const ALLOWED_MODELS = ['openai/gpt-image-2', 'google/gemini-3.1-flash-image', 'google/gemini-3-pro-image'];
+const MODEL_CONFIGS = {
+  'openai/gpt-image-2': {
+    gatewayModel: 'openai/gpt-image-2',
+    strategy: 'image-only',
+    maxImages: 4,
+    supportsSize: true,
+    supportsAspectRatio: true,
+    supportsProviderOptions: true,
+    supportsReferenceImages: true,
+  },
+  'google/gemini-3-pro-image': {
+    gatewayModel: 'google/gemini-3-pro-image',
+    strategy: 'multimodal-files',
+    maxImages: 4,
+    supportsSize: false,
+    supportsAspectRatio: false,
+    usesPromptAspectRatio: true,
+    supportsProviderOptions: false,
+    supportsReferenceImages: true,
+  },
+  // Alias estable de la UI hacia el ID documentado por Vercel para Nano Banana 2.
+  'google/gemini-3.1-flash-image': {
+    gatewayModel: 'google/gemini-3.1-flash-image-preview',
+    strategy: 'multimodal-files',
+    maxImages: 4,
+    supportsSize: false,
+    supportsAspectRatio: false,
+    usesPromptAspectRatio: true,
+    supportsProviderOptions: false,
+    supportsReferenceImages: true,
+  },
+  'google/gemini-3.1-flash-image-preview': {
+    gatewayModel: 'google/gemini-3.1-flash-image-preview',
+    strategy: 'multimodal-files',
+    maxImages: 4,
+    supportsSize: false,
+    supportsAspectRatio: false,
+    usesPromptAspectRatio: true,
+    supportsProviderOptions: false,
+    supportsReferenceImages: true,
+  },
+};
+
+// Modelos soportados (escalable: agregar una entrada en MODEL_CONFIGS y en el front si debe aparecer en la UI)
+const ALLOWED_MODELS = Object.keys(MODEL_CONFIGS);
 
 const json = (res, status, payload) => {
   res.writeHead(status, { 'Content-Type': 'application/json' });
@@ -160,18 +202,184 @@ const extractSafetyViolations = (message) => {
     .filter(Boolean);
 };
 
-const collectGeneratedFiles = async (files = []) => {
+const parseSize = (value) => {
+  const match = String(value || '').match(/^(\d{2,5})x(\d{2,5})$/);
+  if (!match) return null;
+  const width = Number(match[1]);
+  const height = Number(match[2]);
+  if (!Number.isFinite(width) || !Number.isFinite(height) || width <= 0 || height <= 0) return null;
+  return { width, height };
+};
+
+const parseAspectRatio = (value) => {
+  const match = String(value || '').match(/^(\d{1,3}):(\d{1,3})$/);
+  if (!match) return null;
+  const width = Number(match[1]);
+  const height = Number(match[2]);
+  if (!Number.isFinite(width) || !Number.isFinite(height) || width <= 0 || height <= 0) return null;
+  return { width, height, label: `${width}:${height}` };
+};
+
+const targetSizeFromAspectRatio = (aspectRatio, shortSide = 2048) => {
+  const ratio = parseAspectRatio(aspectRatio);
+  if (!ratio) return null;
+  const round64 = (value) => Math.max(64, Math.round(value / 64) * 64);
+  return ratio.width >= ratio.height
+    ? { width: round64((shortSide * ratio.width) / ratio.height), height: shortSide }
+    : { width: shortSide, height: round64((shortSide * ratio.height) / ratio.width) };
+};
+
+const outputTarget = (size, aspectRatio) => parseSize(size) || targetSizeFromAspectRatio(aspectRatio);
+
+const withOutputTarget = async (sharpInput, target) => {
+  if (!target) return sharpInput.webp({ quality: WEBP_QUALITY }).toBuffer();
+  return sharpInput
+    .resize({
+      width: target.width,
+      height: target.height,
+      fit: 'cover',
+      position: 'center',
+    })
+    .webp({ quality: WEBP_QUALITY })
+    .toBuffer();
+};
+
+const collectGeneratedFiles = async (files = [], target) => {
   const sharp = (await import('sharp')).default;
   const images = [];
 
   for (const file of files) {
     if (!file?.base64 && !file?.uint8Array) continue;
+    if (file.mediaType && !file.mediaType.startsWith('image/')) continue;
     const input = file.uint8Array ? Buffer.from(file.uint8Array) : Buffer.from(file.base64, 'base64');
-    const webp = await sharp(input).webp({ quality: WEBP_QUALITY }).toBuffer();
+    const webp = await withOutputTarget(sharp(input), target);
     images.push(`data:image/webp;base64,${webp.toString('base64')}`);
   }
 
   return images;
+};
+
+const promptWithAspectRatio = (prompt, aspectRatio, size) => {
+  const ratio = parseAspectRatio(aspectRatio);
+  if (!ratio) return prompt;
+  const dimensions = parseSize(size);
+  const sizeInstruction = dimensions
+    ? ` Final canvas must be ${dimensions.width}x${dimensions.height}px.`
+    : '';
+  return [
+    prompt,
+    '',
+    'Output contract:',
+    `- Generate exactly one image with a strict ${ratio.label} aspect ratio.${sizeInstruction}`,
+    '- Match the canvas ratio directly; do not add letterboxing, pillarboxing, borders, frames, or padding.',
+    '- Compose the scene for that canvas from the start, preserving the requested subject and style.',
+  ].join('\n');
+};
+
+const buildMultimodalPrompt = (prompt, referenceImages = []) => {
+  if (referenceImages.length === 0) return { prompt };
+  return {
+    messages: [
+      {
+        role: 'user',
+        content: [
+          { type: 'text', text: prompt },
+          ...referenceImages.map((image) => ({
+            type: 'image',
+            image: image.buffer,
+            mediaType: image.mime,
+          })),
+        ],
+      },
+    ],
+  };
+};
+
+const resolveMaybePromise = async (value) => value;
+
+const normalizeUsage = async (result = {}) => (await resolveMaybePromise(result.usage || result.totalUsage)) || null;
+
+const generateImageOnly = async ({
+  gateway,
+  generateImage,
+  modelConfig,
+  prompt,
+  referenceImages,
+  size,
+  aspectRatio,
+  providerOptions,
+  count,
+}) => {
+  const imagePrompt = referenceImages.length
+    ? { text: prompt, images: referenceImages.map((image) => image.buffer) }
+    : prompt;
+  return generateImage({
+    model: gateway.image(modelConfig.gatewayModel),
+    prompt: imagePrompt,
+    ...(modelConfig.supportsSize && size ? { size } : {}),
+    ...(modelConfig.supportsAspectRatio && aspectRatio ? { aspectRatio } : {}),
+    ...(modelConfig.supportsProviderOptions && Object.keys(providerOptions).length ? { providerOptions } : {}),
+    maxImagesPerCall: 1,
+    maxRetries: 1,
+    n: count,
+  });
+};
+
+const generateMultimodalFiles = async ({
+  gateway,
+  generateText,
+  modelConfig,
+  prompt,
+  referenceImages,
+  size,
+  aspectRatio,
+  count,
+}) => {
+  const allFiles = [];
+  const warnings = [];
+  const usages = [];
+  const modelPrompt = modelConfig.usesPromptAspectRatio ? promptWithAspectRatio(prompt, aspectRatio, size) : prompt;
+
+  for (let i = 0; i < count; i++) {
+    const promptForCall =
+      count === 1
+        ? modelPrompt
+        : `${modelPrompt}\n\nGenerate exactly one image. Variant ${i + 1} of ${count}.`;
+    const result = await generateText({
+      model: gateway.languageModel(modelConfig.gatewayModel),
+      ...buildMultimodalPrompt(promptForCall, referenceImages),
+      maxRetries: 1,
+    });
+    allFiles.push(...((await resolveMaybePromise(result.files)) || []));
+    const resultWarnings = (await resolveMaybePromise(result.warnings)) || [];
+    if (Array.isArray(resultWarnings)) warnings.push(...resultWarnings);
+    usages.push(await normalizeUsage(result));
+  }
+
+  return {
+    files: allFiles,
+    usage: usages.length === 1 ? usages[0] : usages,
+    warnings,
+  };
+};
+
+const runImageGeneration = async (input) => {
+  const { modelConfig, generateImage, generateText } = input;
+  if (modelConfig.strategy === 'image-only') {
+    const result = await generateImageOnly(input);
+    return {
+      files: (await resolveMaybePromise(result.images)) || [],
+      usage: await normalizeUsage(result),
+      warnings: (await resolveMaybePromise(result.warnings)) || [],
+    };
+  }
+  if (modelConfig.strategy === 'multimodal-files') {
+    if (!generateText) {
+      throw new Error('La versión instalada de ai no expone generateText.');
+    }
+    return generateMultimodalFiles(input);
+  }
+  throw new Error(`Estrategia de generación no soportada: ${modelConfig.strategy}`);
 };
 
 const normalizeSdkError = (err) => {
@@ -331,31 +539,29 @@ const server = http.createServer((req, res) => {
               },
             });
           }
-          referenceImages.push(Buffer.from(info.b64, 'base64'));
-        }
-
-        const count = Math.max(1, Math.min(Number(n) || 1, 4));
-        const providerOptions = sanitizeOptions(options);
-        const imagePrompt = referenceImages.length ? { text: prompt, images: referenceImages } : prompt;
-
-        if (!IMAGE_ONLY_MODELS.has(model)) {
-          return errorForRequest(400, {
-            error: {
-              message: `El modelo ${model} todavía no está implementado en este flujo del AI SDK.`,
-              category: 'validation',
-              status: 400,
-            },
+          referenceImages.push({
+            buffer: Buffer.from(info.b64, 'base64'),
+            mime: info.mime,
           });
         }
 
+        const modelConfig = MODEL_CONFIGS[model];
+        const count = Math.max(1, Math.min(Number(n) || 1, modelConfig.maxImages));
+        const providerOptions = sanitizeOptions(options);
+
         let generateImage;
+        let generateText;
         let createGateway;
         try {
           const ai = await import('ai');
           generateImage = ai.generateImage || ai.experimental_generateImage;
+          generateText = ai.generateText;
           createGateway = ai.createGateway;
           if (!generateImage) {
             throw new Error('La versión instalada de ai no expone generateImage.');
+          }
+          if (!generateText) {
+            throw new Error('La versión instalada de ai no expone generateText.');
           }
           if (!createGateway) {
             throw new Error('La versión instalada de ai no expone createGateway.');
@@ -374,22 +580,24 @@ const server = http.createServer((req, res) => {
         let result;
         try {
           const gateway = createGateway({ apiKey });
-          result = await generateImage({
-            model: gateway.image(model),
-            prompt: imagePrompt,
-            ...(size ? { size } : {}),
-            ...(aspectRatio ? { aspectRatio } : {}),
-            ...(Object.keys(providerOptions).length ? { providerOptions } : {}),
-            maxImagesPerCall: 1,
-            maxRetries: 1,
-            n: count,
+          result = await runImageGeneration({
+            gateway,
+            generateImage,
+            generateText,
+            modelConfig,
+            prompt,
+            referenceImages,
+            size,
+            aspectRatio,
+            providerOptions,
+            count,
           });
         } catch (err) {
           const payload = normalizeSdkError(err);
           return errorForRequest(err?.statusCode || err?.status || 500, payload);
         }
 
-        const resultImages = await collectGeneratedFiles(result.images);
+        const resultImages = (await collectGeneratedFiles(result.files, outputTarget(size, aspectRatio))).slice(0, count);
         if (resultImages.length === 0) {
           return errorForRequest(502, {
             error: {

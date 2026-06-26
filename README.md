@@ -2,6 +2,19 @@
 
 MVP para generar imagenes con Vercel AI Gateway. El frontend guarda la API key del usuario en `localStorage`, permite configurar modelo/opciones de generacion y muestra un historial local en IndexedDB.
 
+## Modelos soportados
+
+- `openai/gpt-image-2`: modelo image-only via `generateImage`.
+- `google/gemini-3-pro-image`: modelo multimodal via `generateText`, con imagenes devueltas en `result.files`.
+- `google/gemini-3.1-flash-image`: alias de UI para `google/gemini-3.1-flash-image-preview`, tambien via `generateText`.
+
+El backend usa un registry en `MODEL_CONFIGS` para que cada modelo declare su estrategia de generacion. Esto permite agregar modelos nuevos sin mezclar la logica especifica de cada proveedor en el endpoint.
+
+Para modelos Gemini multimodales, Vercel AI Gateway expone la generacion por `generateText` y archivos en `result.files`. Como ese flujo no usa el mismo parametro nativo `aspectRatio` de los modelos image-only, el backend adapta el ratio de dos maneras:
+
+- Agrega al prompt una instruccion explicita de canvas, aspect ratio y dimensiones solicitadas.
+- Normaliza el WebP final con `sharp` al `size` enviado por el frontend, o al aspect ratio solicitado si no hay `size`.
+
 ## Requisitos
 
 - Node.js 18+
