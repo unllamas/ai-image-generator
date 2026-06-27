@@ -68,9 +68,9 @@ Y para ver los eventos en consola:
 http://127.0.0.1:3000/?analytics_debug=1
 ```
 
-## Idiomas
+## Copy e idioma
 
-La app sirve ingles en `/` y español en `/es/`. Si el usuario entra a `/` con el navegador configurado en español, el servidor lo redirige a `/es/`, salvo que entre explicitamente con `?lang=en`.
+La app queda soportada unicamente en ingles. Los textos estaticos viven directamente en `index.html`; los textos dinamicos vinculados a generacion, historial, errores y acciones de imagen viven como constantes en el script del frontend.
 
 ## Privacidad
 
@@ -93,7 +93,8 @@ La documentacion completa esta en [doc/EVENTS.md](doc/EVENTS.md).
 
 Documentacion adicional:
 
-- [Metadata y languages](doc/METADATA_AND_LANGS.md)
+- [Metadata](doc/METADATA_AND_LANGS.md)
+- [Future i18n](doc/FUTURE_I18N.md)
 - [Generacion de imagenes](doc/IMAGE_GENERATION.md)
 
 Resumen:

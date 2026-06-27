@@ -1,6 +1,6 @@
-# Metadata And Languages
+# Metadata
 
-This document defines the SEO metadata and language strategy for AI Image Playground.
+This document defines the SEO metadata strategy for AI Image Playground.
 
 ## Primary Positioning
 
@@ -26,24 +26,44 @@ This avoids competing only as a generic single-provider image generator. The pro
 
 ## Implemented Metadata
 
-The current localized render includes:
+The current static `index.html` metadata includes:
 
-- `<html lang="en">` for `/`
-- `<html lang="es">` for `/es/`
+- `<html lang="en">`
 - SEO title
 - Meta description
+- Keywords
 - Robots directive
 - Canonical URL
-- `hreflang` alternates
+- `x-default` alternate URL
 - Open Graph metadata
 - Twitter card metadata
 - `WebApplication` JSON-LD
 - Theme/color-scheme metadata
 - Referrer policy metadata
 
+Most metadata is written directly in `index.html` because the current product only supports English. The server only injects environment-dependent values:
+
+- `__SITE_URL__`
+- `GA_MEASUREMENT_ID`
+
+## Language Strategy
+
+The application now supports English only.
+
+Static copy lives directly in `index.html`. Dynamic copy related to image generation, placeholders, errors, and generated-image actions lives in frontend constants inside the inline script.
+
+There is no locale folder, language switcher, `hreflang` language alternates, or browser language redirect.
+
+Legacy Spanish paths redirect to the English canonical page:
+
+```text
+/es  -> /
+/es/ -> /
+```
+
 ## Environment Variables
 
-`SITE_URL` is used by `server.js` to inject production URLs into metadata:
+`SITE_URL` is used by `server.js` to inject production URLs into canonical, Open Graph URL, JSON-LD URL, and header links:
 
 ```bash
 SITE_URL=https://ai-image-generator.example.com npm start
@@ -59,120 +79,28 @@ GA_MEASUREMENT_ID=G-XXXXXXXXXX npm start
 
 ## Canonical URL
 
-Current canonical:
+Current canonical tag:
 
 ```html
-<link rel="canonical" href="__CANONICAL_URL__" />
+<link rel="canonical" href="__SITE_URL__/" />
 ```
 
-In production, these become:
+In production, this becomes:
 
 ```html
 <link rel="canonical" href="https://ai-image-generator.example.com/" />
-<link rel="canonical" href="https://ai-image-generator.example.com/es/" />
 ```
 
-## Language Strategy
+## Future Localization
 
-Recommended structure:
+If localization is reintroduced later, treat it as a new feature with explicit requirements:
 
-```text
-/        English default
-/es/     Spanish version
-```
-
-Use paths instead of query parameters for SEO-critical language pages.
-
-Preferred:
-
-```text
-https://ai-image-generator.example.com/
-https://ai-image-generator.example.com/es/
-```
-
-Avoid for primary SEO pages:
-
-```text
-/?lang=es
-/?locale=es
-```
-
-Query params are acceptable for product preferences, debugging, and experiments, but language pages should have stable crawlable URLs.
-
-## Automatic Language Detection
-
-The server checks `Accept-Language` only when the user enters `/`.
-
-Behavior:
-
-- Browser prefers Spanish: `GET /` returns a `302` redirect to `/es/`.
-- User explicitly requests English: `GET /?lang=en` serves English and does not redirect.
-- `GET /es/` always serves Spanish.
-- `GET /es` returns a `301` redirect to `/es/`.
-- `GET /index.html` serves English.
-
-This gives Spanish-speaking users a better first visit while keeping stable crawlable language URLs.
-
-Do not use `?lang=es` as the canonical Spanish page.
-
-## Language Switcher
-
-The header includes a language switcher:
-
-```text
-EN -> /?lang=en
-ES -> /es/
-```
-
-The English link includes `?lang=en` so a Spanish browser can intentionally stay on English instead of being auto-redirected.
-
-## Hreflang
-
-Current placeholders:
-
-```html
-<link rel="alternate" hreflang="en" href="__SITE_URL__/" />
-<link rel="alternate" hreflang="es" href="__SITE_URL__/es/" />
-<link rel="alternate" hreflang="x-default" href="__SITE_URL__/" />
-```
-
-When `/es/` exists, both English and Spanish pages must link to each other with reciprocal `hreflang` tags.
-
-## Future Localization Plan
-
-Phase 1:
-
-- Serve `/` in English.
-- Serve `/es/` in Spanish.
+- Restore locale files.
+- Restore stable language paths.
 - Add reciprocal `hreflang`.
-- Add a header language switcher.
-- Keep generated image history local to the browser.
+- Add a language switcher.
+- Add validation that checks the rendered HTML for every locale.
 
-Phase 3:
+The detailed implementation blueprint is documented in [Future I18n](FUTURE_I18N.md).
 
-- Add localized long-tail pages:
-
-```text
-/gpt-image-generator
-/gemini-image-generator
-/multi-model-ai-image-generator
-/ai-image-generator-with-api-key
-/es/generador-imagenes-ia
-/es/generador-imagenes-ia-con-api-key
-```
-
-## Notes From Google Search Guidance
-
-Google recommends:
-
-- Use descriptive titles and snippets that help users understand the page.
-- Use `hreflang` for localized versions.
-- Use fully qualified URLs in `hreflang`.
-- Keep language versions bidirectionally linked.
-- Do not rely on `lang` or `hreflang` alone for language detection; page content still matters.
-
-References:
-
-- https://developers.google.com/search/docs/appearance/title-link
-- https://developers.google.com/search/docs/appearance/snippet
-- https://developers.google.com/search/docs/specialty/international/localized-versions
+Until then, the product surface and SEO metadata should remain English-only.

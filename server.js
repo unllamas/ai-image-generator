@@ -16,78 +16,6 @@ const MAX_BODY_BYTES = 20 * 1024 * 1024;
 const MAX_REFERENCE_IMAGES = 5;
 const MAX_PROMPT_CHARS = 5000;
 const WEBP_QUALITY = 82;
-const SUPPORTED_LOCALES = new Set(['en', 'es']);
-
-const LOCALES = {
-  en: {
-    lang: 'en',
-    path: '/',
-    ogLocale: 'en_US',
-    ogLocaleAlternate: 'es_ES',
-    title: 'AI Image Generator Playground | Compare GPT and Gemini Models',
-    description:
-      'Generate, edit, and compare AI images across GPT Image, Gemini, and future image providers from one multi-model playground.',
-    keywords:
-      'ai image generator, ai image playground, generate ai image, GPT image generator, Gemini image generator, multi model image generator',
-    ogTitle: 'AI Image Generator Playground',
-    active: {
-      en: 'bg-white text-black',
-      es: 'text-neutral-400 hover:text-white',
-    },
-    copy: {},
-  },
-  es: {
-    lang: 'es',
-    path: '/es/',
-    ogLocale: 'es_ES',
-    ogLocaleAlternate: 'en_US',
-    title: 'Generador de Imágenes IA | Compará modelos GPT y Gemini',
-    description:
-      'Generá, editá y compará imágenes IA con GPT Image, Gemini y futuros proveedores desde un playground multi-modelo.',
-    keywords:
-      'generador de imagenes ia, crear imagenes ia, generador ia, GPT image generator, Gemini image generator, playground imagenes ia',
-    ogTitle: 'Generador de Imágenes IA Playground',
-    active: {
-      en: 'text-neutral-400 hover:text-white',
-      es: 'bg-white text-black',
-    },
-    copy: {
-      'AI Image Generator Playground': 'Generador de Imágenes IA Playground',
-      'Vercel AI Gateway API Key': 'API Key de Vercel AI Gateway',
-      Save: 'Guardar',
-      Saved: 'Guardada',
-      'A cyberpunk astronaut walking through neon-lit Kyoto streets in the rain...':
-        'Un astronauta cyberpunk caminando por calles de Kyoto iluminadas con neón bajo la lluvia...',
-      'Advanced options': 'Opciones avanzadas',
-      'Aspect Ratio': 'Aspect ratio',
-      'Output count': 'Cantidad',
-      Quality: 'Calidad',
-      Generate: 'Generar',
-      'Generated images will appear here': 'Las imágenes generadas aparecerán aquí',
-      'Close image': 'Cerrar imagen',
-      'Generated image preview': 'Previsualización de imagen generada',
-      Model: 'Modelo',
-      Prompt: 'Prompt',
-      Language: 'Idioma',
-      Resolution: 'Resolución',
-      Size: 'Tamaño',
-      Download: 'Descargar',
-      Edit: 'Editar',
-      'Generating image...': 'Generando imagen...',
-      'You can use up to ': 'Podés usar hasta ',
-      ' reference images.': ' imágenes de referencia.',
-      'Unknown model': 'Modelo desconocido',
-      'Not available': 'No disponible',
-      'Enter your API key to generate images.': 'Ingresá tu API key para generar imágenes.',
-      'Write a prompt.': 'Escribí un prompt.',
-      'The prompt cannot exceed ': 'El prompt no puede superar ',
-      ' characters.': ' caracteres.',
-      'Unknown error': 'Error desconocido',
-      Reason: 'Motivo',
-      Details: 'Detalle',
-    },
-  },
-};
 
 const MODEL_CONFIGS = {
   'openai/gpt-image-2': {
@@ -140,53 +68,11 @@ const json = (res, status, payload) => {
   res.end(JSON.stringify(payload));
 };
 
-const localizedUrl = (locale) => `${SITE_URL}${LOCALES[locale].path === '/' ? '/' : LOCALES[locale].path}`;
-
-const htmlEscape = (value) =>
-  String(value)
-    .replace(/&/g, '&amp;')
-    .replace(/"/g, '&quot;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;');
-
-const applyCopy = (html, copy = {}) =>
-  Object.entries(copy)
-    .sort(([a], [b]) => b.length - a.length)
-    .reduce((output, [from, to]) => output.replaceAll(from, to), html);
-
-const acceptsSpanish = (req) => {
-  const header = String(req.headers['accept-language'] || '').toLowerCase();
-  if (!header) return false;
-  const first = header.split(',')[0]?.trim() || '';
-  return first === 'es' || first.startsWith('es-');
-};
-
-const resolveLocale = (pathname) => {
-  if (pathname === '/es' || pathname.startsWith('/es/')) return 'es';
-  return 'en';
-};
-
-const serveIndex = (res, locale = 'en') => {
-  const config = LOCALES[SUPPORTED_LOCALES.has(locale) ? locale : 'en'];
-  const canonicalUrl = localizedUrl(config.lang);
-  let html = fs
+const serveIndex = (res) => {
+  const html = fs
     .readFileSync(path.join(__dirname, 'index.html'), 'utf8')
     .replaceAll('__SITE_URL__', SITE_URL)
-    .replaceAll('__LANG__', config.lang)
-    .replaceAll('__META_TITLE__', htmlEscape(config.title))
-    .replaceAll('__META_DESCRIPTION__', htmlEscape(config.description))
-    .replaceAll('__META_KEYWORDS__', htmlEscape(config.keywords))
-    .replaceAll('__CANONICAL_URL__', canonicalUrl)
-    .replaceAll('__EN_URL__', localizedUrl('en'))
-    .replaceAll('__ES_URL__', localizedUrl('es'))
-    .replaceAll('__OG_TITLE__', htmlEscape(config.ogTitle))
-    .replaceAll('__OG_DESCRIPTION__', htmlEscape(config.description))
-    .replaceAll('__OG_LOCALE__', config.ogLocale)
-    .replaceAll('__OG_LOCALE_ALTERNATE__', config.ogLocaleAlternate)
-    .replaceAll('__EN_ACTIVE_CLASS__', config.active.en)
-    .replaceAll('__ES_ACTIVE_CLASS__', config.active.es)
-    .replace('"__GA_MEASUREMENT_ID__"', JSON.stringify(GA_MEASUREMENT_ID));
-  html = applyCopy(html, config.copy);
+    .replace("'__GA_MEASUREMENT_ID__'", JSON.stringify(GA_MEASUREMENT_ID));
   res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
   res.end(html);
 };
@@ -543,19 +429,15 @@ const normalizeSdkError = (err) => {
 const server = http.createServer((req, res) => {
   const url = new URL(req.url, SITE_URL);
 
-  // ── Serve localized front ──
-  if (req.method === 'GET' && ['/', '/index.html', '/es', '/es/'].includes(url.pathname)) {
-    if (url.pathname === '/es') {
-      res.writeHead(301, { Location: '/es/' });
-      res.end();
-      return;
-    }
-    if (url.pathname === '/' && url.searchParams.get('lang') !== 'en' && acceptsSpanish(req)) {
-      res.writeHead(302, { Location: '/es/' });
-      res.end();
-      return;
-    }
-    serveIndex(res, resolveLocale(url.pathname));
+  // ── Serve front ──
+  if (req.method === 'GET' && ['/', '/index.html'].includes(url.pathname)) {
+    serveIndex(res);
+    return;
+  }
+
+  if (req.method === 'GET' && (url.pathname === '/es' || url.pathname === '/es/')) {
+    res.writeHead(301, { Location: '/' });
+    res.end();
     return;
   }
 

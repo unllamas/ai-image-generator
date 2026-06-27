@@ -1,16 +1,16 @@
 <!doctype html>
-<html lang="__LANG__" class="dark">
+<html lang="en" class="dark">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>__META_TITLE__</title>
+    <title>AI Image Generator Playground | Compare GPT and Gemini Models</title>
     <meta
       name="description"
-      content="__META_DESCRIPTION__"
+      content="Generate, edit, and compare AI images across GPT Image, Gemini, and future image providers from one multi-model playground."
     />
     <meta
       name="keywords"
-      content="__META_KEYWORDS__"
+      content="ai image generator, ai image playground, generate ai image, GPT image generator, Gemini image generator, multi model image generator"
     />
     <meta name="robots" content="index, follow, max-image-preview:large" />
     <meta name="author" content="AI Image Playground" />
@@ -19,31 +19,28 @@
     <meta name="color-scheme" content="dark" />
     <meta name="referrer" content="strict-origin-when-cross-origin" />
     <meta name="format-detection" content="telephone=no" />
-    <link rel="canonical" href="__CANONICAL_URL__" />
-    <link rel="alternate" hreflang="en" href="__EN_URL__" />
-    <link rel="alternate" hreflang="es" href="__ES_URL__" />
+    <link rel="canonical" href="__SITE_URL__/" />
     <link rel="alternate" hreflang="x-default" href="__SITE_URL__/" />
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="AI Image Playground" />
-    <meta property="og:title" content="__OG_TITLE__" />
+    <meta property="og:title" content="AI Image Generator Playground" />
     <meta
       property="og:description"
-      content="__OG_DESCRIPTION__"
+      content="Generate, edit, and compare AI images across GPT Image, Gemini, and future image providers from one multi-model playground."
     />
-    <meta property="og:url" content="__CANONICAL_URL__" />
-    <meta property="og:locale" content="__OG_LOCALE__" />
-    <meta property="og:locale:alternate" content="__OG_LOCALE_ALTERNATE__" />
+    <meta property="og:url" content="__SITE_URL__/" />
+    <meta property="og:locale" content="en_US" />
     <meta name="twitter:card" content="summary" />
-    <meta name="twitter:title" content="__OG_TITLE__" />
+    <meta name="twitter:title" content="AI Image Generator Playground" />
     <meta
       name="twitter:description"
-      content="__OG_DESCRIPTION__"
+      content="Generate, edit, and compare AI images across GPT Image, Gemini, and future image providers from one multi-model playground."
     />
     <script>
       window.APP_CONFIG = {
         gaMeasurementId: '__GA_MEASUREMENT_ID__',
         siteUrl: '__SITE_URL__',
-        locale: '__LANG__',
+        locale: 'en',
       };
     </script>
     <script type="application/ld+json">
@@ -51,11 +48,11 @@
         "@context": "https://schema.org",
         "@type": "WebApplication",
         "name": "AI Image Playground",
-        "alternateName": "__OG_TITLE__",
-        "url": "__CANONICAL_URL__",
+        "alternateName": "AI Image Generator Playground",
+        "url": "__SITE_URL__/",
         "applicationCategory": "DesignApplication",
         "operatingSystem": "Web",
-        "description": "__META_DESCRIPTION__",
+        "description": "Generate, edit, and compare AI images across GPT Image, Gemini, and future image providers from one multi-model playground.",
         "featureList": [
           "AI image generation",
           "Multi-model image comparison",
@@ -73,53 +70,68 @@
     <script src="https://cdn.tailwindcss.com"></script>
   </head>
   <body class="bg-neutral-950 text-neutral-200 min-h-screen font-sans">
-    <div class="max-w-5xl mx-auto p-4 md:p-8 space-y-6">
-      <header class="flex flex-col md:flex-row md:items-center justify-between gap-3">
-        <h1 class="text-xl font-semibold text-white">AI Image Generator Playground</h1>
-        <div class="flex flex-col sm:flex-row gap-2">
-          <nav class="flex bg-neutral-900 border border-neutral-800 rounded-lg p-1 text-xs" aria-label="Language">
-            <a href="__EN_URL__?lang=en" class="rounded-md px-2.5 py-2 __EN_ACTIVE_CLASS__" hreflang="en">EN</a>
-            <a href="__ES_URL__" class="rounded-md px-2.5 py-2 __ES_ACTIVE_CLASS__" hreflang="es">ES</a>
-          </nav>
-          <input
-            id="apiKey"
-            type="password"
-            placeholder="Vercel AI Gateway API Key"
-            class="bg-neutral-900 border border-neutral-800 rounded-lg px-3 py-2 text-sm w-72 focus:outline-none focus:border-neutral-600"
-          />
-          <button id="saveKey" class="bg-neutral-800 hover:bg-neutral-700 rounded-lg px-4 py-2 text-sm">Save</button>
+    <div class="max-w-6xl mx-auto px-4 py-4 md:px-8 md:py-6 space-y-10">
+      <nav class="flex items-center justify-between gap-3">
+        <a href="__SITE_URL__/" class="text-sm font-semibold text-white">AI Image Playground</a>
+        <div class="flex items-center gap-2">
+          <button
+            id="settingsOpen"
+            type="button"
+            class="bg-neutral-900 border border-neutral-800 hover:bg-neutral-800 rounded-lg px-3 py-2 text-sm"
+          >
+            Settings
+          </button>
         </div>
-      </header>
+      </nav>
 
-      <div class="grid md:grid-cols-2 gap-6">
-        <section class="bg-neutral-900 border border-neutral-800 rounded-2xl p-5 space-y-5 h-fit">
+      <header class="mx-auto max-w-xl text-center space-y-5 pt-6 md:pt-12">
+        <div class="space-y-3">
+          <h1 class="text-4xl md:text-6xl font-semibold text-white">AI Image Generator Playground</h1>
+          <p class="mx-auto max-w-2xl text-sm md:text-base leading-7 text-neutral-400">
+            Generate and compare images across GPT Image, Gemini, and future AI providers in one focused workspace.
+          </p>
+        </div>
+
+        <section
+          id="promptCard"
+          class="relative flex flex-col gap-2 bg-neutral-900 border border-neutral-800 rounded-2xl p-4 md:p-5 text-left shadow-2xl transition"
+        >
+          <div
+            id="dragOverlay"
+            class="pointer-events-none absolute inset-0 z-20 hidden items-center justify-center rounded-2xl border-2 border-dashed border-white bg-black/75 text-center"
+          >
+            <div>
+              <p class="text-sm font-medium text-white">Drop your images here</p>
+              <p class="mt-1 text-xs text-neutral-300">Release to add them as references</p>
+            </div>
+          </div>
           <div>
             <input id="fileInput" type="file" accept="image/*" multiple class="hidden" />
             <div class="flex items-center gap-2 flex-wrap">
               <button
                 id="uploadBtn"
+                type="button"
                 class="w-16 h-16 bg-neutral-800 hover:bg-neutral-700 rounded-xl flex flex-col items-center justify-center text-xs text-neutral-400"
               >
                 <span class="text-lg">🖼️</span>
                 <span id="refCount">0/5</span>
               </button>
-              <div id="refPreviews" class="flex gap-2"></div>
+              <div id="refPreviews" class="flex gap-2 flex-wrap"></div>
             </div>
           </div>
 
-          <!-- Prompt -->
           <div class="relative">
             <textarea
               id="prompt"
-              rows="4"
+              rows="5"
               maxlength="5000"
               placeholder="A cyberpunk astronaut walking through neon-lit Kyoto streets in the rain..."
-              class="w-full bg-neutral-950 border border-neutral-800 rounded-xl p-3 pr-20 text-sm resize-none focus:outline-none focus:border-neutral-600"
+              class="w-full bg-neutral-950 border border-neutral-800 rounded-xl p-4 pr-20 text-sm resize-none focus:outline-none focus:border-neutral-600"
             ></textarea>
-            <span id="promptCount" class="absolute top-2 right-3 text-xs text-neutral-500">0/5000</span>
+            <span id="promptCount" class="absolute top-3 right-4 text-xs text-neutral-500">0/5000</span>
           </div>
 
-          <div class="flex items-center gap-2">
+          <div class="flex flex-col md:flex-row md:items-center gap-2">
             <select id="model" class="bg-neutral-800 rounded-full px-4 py-2 text-sm focus:outline-none flex-1">
               <option value="openai/gpt-image-2">GPT Image 2</option>
               <option value="google/gemini-3.1-flash-image">Gemini 3.1 Flash Image</option>
@@ -134,26 +146,26 @@
             </button>
           </div>
 
-          <div id="advancedPanel" class="space-y-4 text-sm hidden">
-            <div class="flex items-center justify-between">
+          <div id="advancedPanel" class="mt-4 space-y-4 text-sm hidden">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
               <span class="text-neutral-400">Aspect Ratio</span>
-              <div id="ratio" class="flex bg-neutral-800 rounded-full p-1" data-value="1:1">
+              <div id="ratio" class="flex bg-neutral-800 rounded-full p-1 w-fit" data-value="1:1">
                 <button data-v="1:1" class="pill">1:1</button>
                 <button data-v="9:16" class="pill">9:16</button>
                 <button data-v="16:9" class="pill">16:9</button>
                 <button data-v="3:2" class="pill">3:2</button>
               </div>
             </div>
-            <div class="flex items-center justify-between">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
               <span class="text-neutral-400">Output count</span>
-              <div id="count" class="flex bg-neutral-800 rounded-full p-1" data-value="1">
+              <div id="count" class="flex bg-neutral-800 rounded-full p-1 w-fit" data-value="1">
                 <button data-v="1" class="pill">1</button>
                 <button data-v="2" class="pill">2</button>
                 <button data-v="3" class="pill">3</button>
                 <button data-v="4" class="pill">4</button>
               </div>
             </div>
-            <div class="flex items-center justify-between gap-3">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
               <span class="text-neutral-400">Quality</span>
               <select id="quality" class="bg-neutral-800 rounded-full px-3 py-2 text-sm focus:outline-none">
                 <option value="medium">Medium · 2K</option>
@@ -165,17 +177,107 @@
 
           <button
             id="generate"
-            class="w-full bg-white text-black font-medium rounded-xl py-3 hover:bg-neutral-200 disabled:opacity-40 disabled:cursor-not-allowed transition"
+            class="w-full bg-white text-black font-medium rounded-full px-5 py-2 text-sm hover:bg-neutral-200 disabled:opacity-40 disabled:cursor-not-allowed transition"
           >
             Generate
           </button>
-          <p id="error" class="text-red-400 text-sm hidden"></p>
-        </section>
 
-        <section>
-          <div id="results" class="grid grid-cols-2 gap-3"></div>
-          <p id="empty" class="text-center py-20 text-neutral-600 text-sm">Generated images will appear here</p>
+          <p id="error" class="mt-3 text-red-400 text-sm hidden"></p>
         </section>
+      </header>
+
+      <section class="space-y-3">
+        <div class="flex items-center justify-between">
+          <h2 class="text-sm font-medium text-white">Generated images</h2>
+          <p id="galleryHint" class="text-xs text-neutral-500">Your latest outputs and experiments</p>
+        </div>
+        <div id="results" class="columns-2 md:columns-3 gap-3"></div>
+      </section>
+    </div>
+
+    <div
+      id="settingsModal"
+      class="fixed inset-0 z-50 hidden bg-black/80 p-4"
+      data-default-title="Settings"
+      data-default-description="Select a provider and save your API key to start generating images."
+      data-onboarding-title="Connect a provider"
+      data-onboarding-description="Set up a provider and API key before generating your first image."
+    >
+      <div class="min-h-full flex items-center justify-center">
+        <div class="w-full max-w-md rounded-2xl border border-neutral-800 bg-neutral-950 shadow-2xl">
+          <div class="flex items-start justify-between gap-4 border-b border-neutral-800 p-5">
+            <div>
+              <h2 id="settingsTitle" class="text-lg font-semibold text-white">Settings</h2>
+              <p id="settingsDescription" class="mt-1 text-sm text-neutral-400">
+                Select a provider and save your API key to start generating images.
+              </p>
+            </div>
+            <button
+              id="settingsClose"
+              type="button"
+              class="bg-neutral-900 hover:bg-neutral-800 rounded-full w-9 h-9 text-xl leading-none"
+              aria-label="Close settings"
+            >
+              ×
+            </button>
+          </div>
+          <div class="p-5 space-y-4">
+            <div>
+              <label for="provider" class="block text-xs uppercase text-neutral-500">Provider</label>
+              <select
+                id="provider"
+                class="mt-2 w-full bg-neutral-900 border border-neutral-800 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-neutral-600"
+              >
+                <option value="vercel-ai-gateway">Vercel AI Gateway</option>
+              </select>
+            </div>
+            <div>
+              <label for="apiKey" class="block text-xs uppercase text-neutral-500">API key</label>
+              <input
+                id="apiKey"
+                type="password"
+                placeholder="Vercel AI Gateway API Key"
+                class="mt-2 w-full bg-neutral-900 border border-neutral-800 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-neutral-600"
+              />
+            </div>
+            <div
+              id="settingsOnboarding"
+              class="hidden rounded-xl border border-neutral-800 bg-neutral-900 p-4 text-sm text-neutral-300"
+            >
+              <p class="font-medium text-white">Do you already have an API key?</p>
+              <p class="mt-1 text-neutral-400">
+                If you do, configure it here. If not, open the provider form and come back when it is ready.
+              </p>
+              <a
+                id="providerSignup"
+                href="https://vercel.com/docs/ai-gateway"
+                target="_blank"
+                rel="noreferrer"
+                class="mt-3 inline-flex bg-neutral-800 hover:bg-neutral-700 rounded-full px-3 py-2 text-xs text-white"
+              >
+                Get an API key
+              </a>
+            </div>
+          </div>
+          <div class="border-t border-neutral-800 p-5 flex justify-end gap-2">
+            <button
+              id="settingsCancel"
+              type="button"
+              class="bg-neutral-900 hover:bg-neutral-800 rounded-full px-4 py-2 text-sm"
+            >
+              Cancel
+            </button>
+            <button
+              id="saveKey"
+              type="button"
+              class="bg-white text-black hover:bg-neutral-200 rounded-full px-4 py-2 text-sm font-medium"
+              data-save-label="Save settings"
+              data-saved-label="Saved"
+            >
+              Save settings
+            </button>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -270,6 +372,32 @@
       const MAX_PROMPT_CHARS = 5000;
       const DB_NAME = 'ai_image_playground';
       const DB_STORE = 'generated_images';
+      const DEFAULT_PROVIDER = 'vercel-ai-gateway';
+      const COPY = {
+        gallery: {
+          preview: (number) => `Preview ${number}`,
+          generating: 'Generating image...',
+        },
+        actions: {
+          edit: 'Edit',
+          download: 'Download',
+        },
+        quality: {
+          low: 'Low',
+          medium: 'Medium',
+          high: 'High',
+        },
+        errors: {
+          maxReferences: (max) => `You can use up to ${max} reference images.`,
+          emptyPrompt: 'Write a prompt.',
+          promptTooLong: (max) => `The prompt cannot exceed ${max} characters.`,
+          unknown: 'Unknown error',
+          reason: 'Reason',
+          details: 'Details',
+        },
+        unknownModel: 'Unknown model',
+        notAvailable: 'Not available',
+      };
       let generatedImages = [];
       let pendingGenerations = [];
       let selectedImageId = null;
@@ -340,12 +468,55 @@
         }
       }
 
+      function providerConfig() {
+        const apiKey = localStorage.getItem('ai_gw_key') || '';
+        return {
+          provider: localStorage.getItem('ai_provider') || (apiKey ? DEFAULT_PROVIDER : ''),
+          apiKey,
+        };
+      }
+
+      function hasProviderConfig() {
+        const config = providerConfig();
+        return config.provider === DEFAULT_PROVIDER && Boolean(config.apiKey);
+      }
+
+      function openSettingsModal(mode = 'settings') {
+        const config = providerConfig();
+        const settingsModal = $('settingsModal');
+        $('provider').value = config.provider || DEFAULT_PROVIDER;
+        $('apiKey').value = config.apiKey;
+        $('settingsTitle').textContent =
+          mode === 'onboarding' ? settingsModal.dataset.onboardingTitle : settingsModal.dataset.defaultTitle;
+        $('settingsDescription').textContent =
+          mode === 'onboarding' ? settingsModal.dataset.onboardingDescription : settingsModal.dataset.defaultDescription;
+        $('settingsOnboarding').classList.toggle('hidden', mode !== 'onboarding');
+        settingsModal.classList.remove('hidden');
+        document.body.classList.add('overflow-hidden');
+        setTimeout(() => $('apiKey').focus(), 0);
+      }
+
+      function closeSettingsModal() {
+        $('settingsModal').classList.add('hidden');
+        document.body.classList.remove('overflow-hidden');
+      }
+
+      $('settingsOpen').onclick = () => openSettingsModal();
+      $('settingsClose').onclick = closeSettingsModal;
+      $('settingsCancel').onclick = closeSettingsModal;
+      $('settingsModal').addEventListener('click', (e) => {
+        if (e.target === $('settingsModal')) closeSettingsModal();
+      });
+
+      $('provider').value = providerConfig().provider || DEFAULT_PROVIDER;
       $('apiKey').value = localStorage.getItem('ai_gw_key') || '';
       $('saveKey').onclick = () => {
+        localStorage.setItem('ai_provider', $('provider').value);
         localStorage.setItem('ai_gw_key', $('apiKey').value.trim());
         trackEvent('api_key_saved');
-        $('saveKey').textContent = 'Saved';
-        setTimeout(() => ($('saveKey').textContent = 'Save'), 1500);
+        $('saveKey').textContent = $('saveKey').dataset.savedLabel;
+        setTimeout(() => ($('saveKey').textContent = $('saveKey').dataset.saveLabel), 1500);
+        closeSettingsModal();
       };
 
       $('advancedToggle').onclick = () => {
@@ -386,18 +557,77 @@
 
       $('uploadBtn').onclick = () => $('fileInput').click();
       $('fileInput').onchange = (e) => {
-        [...e.target.files].forEach((file) => {
+        handleReferenceFiles(e.target.files);
+        e.target.value = '';
+      };
+
+      function handleReferenceFiles(files) {
+        const imageFiles = [...files].filter((file) => file?.type?.startsWith('image/'));
+        if (!imageFiles.length) return;
+        imageFiles.forEach((file) => {
           if (refImages.length >= MAX_REFS) return;
           const reader = new FileReader();
           reader.onload = () => addRefImage(reader.result);
           reader.readAsDataURL(file);
         });
-        e.target.value = '';
-      };
+      }
+
+      function filesFromDataTransfer(dataTransfer) {
+        const files = [...(dataTransfer?.files || [])];
+        if (files.length) return files;
+        return [...(dataTransfer?.items || [])]
+          .filter((item) => item.kind === 'file')
+          .map((item) => item.getAsFile())
+          .filter(Boolean);
+      }
+
+      function hasFileDrop(dataTransfer) {
+        return [...(dataTransfer?.types || [])].includes('Files');
+      }
+
+      let dragDepth = 0;
+      function setPromptDropActive(active) {
+        $('dragOverlay').classList.toggle('hidden', !active);
+        $('dragOverlay').classList.toggle('flex', active);
+        $('promptCard').classList.toggle('border-white', active);
+        $('promptCard').classList.toggle('border-dashed', active);
+      }
+
+      ['dragenter', 'dragover'].forEach((eventName) => {
+        $('promptCard').addEventListener(eventName, (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          if (e.dataTransfer) e.dataTransfer.dropEffect = 'copy';
+          if (eventName === 'dragenter') dragDepth += 1;
+          setPromptDropActive(true);
+        });
+      });
+      $('promptCard').addEventListener('dragleave', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        dragDepth = Math.max(0, dragDepth - 1);
+        if (dragDepth === 0) setPromptDropActive(false);
+      });
+      $('promptCard').addEventListener('drop', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        dragDepth = 0;
+        setPromptDropActive(false);
+        handleReferenceFiles(filesFromDataTransfer(e.dataTransfer));
+      });
+      document.addEventListener('dragover', (e) => {
+        if (hasFileDrop(e.dataTransfer)) e.preventDefault();
+      });
+      document.addEventListener('drop', (e) => {
+        const target = e.target instanceof Element ? e.target : null;
+        if (!target?.closest('#promptCard') && hasFileDrop(e.dataTransfer)) {
+          e.preventDefault();
+        }
+      });
 
       function addRefImage(src) {
         if (refImages.length >= MAX_REFS) {
-          showError(`You can use up to ${MAX_REFS} reference images.`);
+          showError(COPY.errors.maxReferences(MAX_REFS));
           return false;
         }
         refImages.push(src);
@@ -451,6 +681,7 @@
       }
 
       async function loadHistory() {
+        renderResults();
         try {
           const db = await openHistoryDb();
           const tx = db.transaction(DB_STORE, 'readonly');
@@ -464,7 +695,8 @@
         } catch {
           generatedImages = [];
         }
-        renderResults();
+        requestAnimationFrame(renderResults);
+        backfillThumbnails();
       }
 
       async function persistHistory() {
@@ -488,14 +720,26 @@
       }
 
       function renderResults() {
-        $('empty').classList.toggle('hidden', generatedImages.length > 0 || pendingGenerations.length > 0);
+        const showPlaceholders = generatedImages.length === 0 && pendingGenerations.length === 0;
+        const placeholdersHtml = showPlaceholders
+          ? Array.from(
+              { length: 6 },
+            (_, index) => `
+        <div class="mb-3 break-inside-avoid aspect-square rounded-xl border border-neutral-800 bg-neutral-900/70 overflow-hidden relative">
+          <div class="absolute inset-0 bg-[repeating-linear-gradient(45deg,#262626_0_1px,transparent_1px_9px)] opacity-60"></div>
+          <div class="absolute left-3 top-3 rounded-full bg-black/50 border border-white/10 px-2.5 py-1 text-[11px] text-neutral-300">
+            ${escapeHtml(COPY.gallery.preview(index + 1))}
+          </div>
+        </div>`,
+            ).join('')
+          : '';
         const pendingHtml = pendingGenerations
           .map(
             () => `
-        <div class="col-span-2 min-h-72 rounded-xl border border-neutral-800 bg-neutral-900/80 overflow-hidden relative">
+        <div class="mb-3 break-inside-avoid aspect-square rounded-xl border border-neutral-800 bg-neutral-900/80 overflow-hidden relative">
           <div class="absolute inset-0 bg-gradient-to-r from-neutral-900 via-neutral-800 to-neutral-900 animate-pulse"></div>
           <div class="absolute inset-0 flex items-center justify-center text-neutral-400 text-sm">
-            Generating image...
+            ${escapeHtml(COPY.gallery.generating)}
           </div>
         </div>`,
           )
@@ -503,10 +747,10 @@
         const imagesHtml = generatedImages
           .map(
             (item) => `
-        <div class="relative group">
+        <div class="mb-3 break-inside-avoid relative group overflow-hidden rounded-xl">
           <button type="button" data-open-image="${escapeAttr(item.id)}"
             class="block w-full text-left focus:outline-none focus:ring-2 focus:ring-white/40 rounded-xl">
-            <img src="${escapeAttr(item.src)}" class="rounded-xl border border-neutral-800 w-full bg-neutral-900"/>
+            <img src="${escapeAttr(item.thumb || item.src)}" loading="lazy" decoding="async" class="rounded-xl border border-neutral-800 w-full bg-neutral-900"/>
           </button>
           <span class="pointer-events-none absolute top-2 left-2 max-w-[calc(100%-1rem)] truncate rounded-full bg-black/75 border border-white/10 px-2.5 py-1 text-[11px] font-medium text-white shadow">
             ${escapeHtml(modelLabel(item.model))}
@@ -514,18 +758,18 @@
           <div class="absolute bottom-2 right-2 flex gap-2 opacity-0 group-hover:opacity-100 transition">
             <button type="button" data-edit-image="${escapeAttr(item.id)}"
               class="bg-black/70 px-3 py-1 rounded-lg text-xs">
-              Edit
+              ${escapeHtml(COPY.actions.edit)}
             </button>
             <a href="${escapeAttr(item.src)}" download="${downloadName(item)}"
               data-download-image="${escapeAttr(item.id)}"
               class="bg-black/70 px-3 py-1 rounded-lg text-xs">
-              Download
+              ${escapeHtml(COPY.actions.download)}
             </a>
           </div>
         </div>`,
           )
           .join('');
-        $('results').innerHTML = pendingHtml + imagesHtml;
+        $('results').innerHTML = placeholdersHtml + pendingHtml + imagesHtml;
       }
 
       function addGeneratedImages(images, meta) {
@@ -533,6 +777,7 @@
         const items = images.map((src, index) => ({
           id: `${createdAt}-${index}-${Math.random().toString(36).slice(2)}`,
           src,
+          thumb: '',
           prompt: meta.prompt,
           model: meta.model,
           aspectRatio: meta.aspectRatio,
@@ -544,6 +789,46 @@
         generatedImages = [...items, ...generatedImages].slice(0, MAX_HISTORY);
         persistHistory();
         renderResults();
+        buildThumbnails(items);
+      }
+
+      function createThumbnail(src, maxWidth = 720) {
+        return new Promise((resolve) => {
+          const img = new Image();
+          img.onload = () => {
+            try {
+              const scale = Math.min(1, maxWidth / img.naturalWidth);
+              const canvas = document.createElement('canvas');
+              canvas.width = Math.max(1, Math.round(img.naturalWidth * scale));
+              canvas.height = Math.max(1, Math.round(img.naturalHeight * scale));
+              const ctx = canvas.getContext('2d');
+              ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+              resolve(canvas.toDataURL('image/webp', 0.78));
+            } catch {
+              resolve('');
+            }
+          };
+          img.onerror = () => resolve('');
+          img.src = src;
+        });
+      }
+
+      async function buildThumbnails(items) {
+        let updated = false;
+        for (const item of items) {
+          if (!item.src || item.thumb) continue;
+          item.thumb = await createThumbnail(item.src);
+          updated = true;
+        }
+        if (updated) {
+          persistHistory();
+          renderResults();
+        }
+      }
+
+      function backfillThumbnails() {
+        const missing = generatedImages.filter((item) => item.src && !item.thumb);
+        if (missing.length) buildThumbnails(missing);
       }
 
       function addPending(count) {
@@ -580,12 +865,12 @@
             'google/gemini-3-pro-image': 'Gemini 3 Pro',
           }[model] ||
           model ||
-          'Unknown model'
+          COPY.unknownModel
         );
       }
 
       function qualityLabel(quality) {
-        return { low: 'Low', medium: 'Medium', high: 'High' }[quality] || quality || 'Not available';
+        return COPY.quality[quality] || quality || COPY.notAvailable;
       }
 
       function collectOptions() {
@@ -599,19 +884,22 @@
       }
 
       $('generate').onclick = async () => {
-        const apiKey = localStorage.getItem('ai_gw_key') || $('apiKey').value.trim();
+        const config = providerConfig();
+        const apiKey = config.apiKey;
         const prompt = $('prompt').value.trim();
         const errEl = $('error');
         errEl.classList.add('hidden');
 
-        if (!apiKey) return showError('Enter your API key to generate images.');
-        if (!prompt) return showError('Write a prompt.');
+        if (!prompt) return showError(COPY.errors.emptyPrompt);
         if (prompt.length > MAX_PROMPT_CHARS) {
-          return showError(`The prompt cannot exceed ${MAX_PROMPT_CHARS} characters.`);
+          return showError(COPY.errors.promptTooLong(MAX_PROMPT_CHARS));
+        }
+        if (!hasProviderConfig()) {
+          openSettingsModal('onboarding');
+          return;
         }
 
         $('generate').disabled = true;
-        $('empty').classList.add('hidden');
 
         try {
           const model = $('model').value;
@@ -638,7 +926,7 @@
             }),
           });
           const data = await r.json();
-          if (!r.ok) throw data.error || new Error('Unknown error');
+          if (!r.ok) throw data.error || new Error(COPY.errors.unknown);
           addGeneratedImages(data.images || [], { prompt, model, aspectRatio, quality, resolution, size });
           trackEvent('generate_success', {
             ...analyticsContext(),
@@ -653,7 +941,6 @@
             category: err?.category || 'unknown',
             status: err?.status || 0,
           });
-          $('empty').classList.toggle('hidden', generatedImages.length > 0 || pendingGenerations.length > 0);
         } finally {
           clearPending();
           $('generate').disabled = false;
@@ -668,17 +955,17 @@
 
       function formatError(err) {
         if (typeof err === 'string') return err;
-        const message = err?.message || 'Unknown error';
+        const message = err?.message || COPY.errors.unknown;
         const parts = [message];
         if (err?.category === 'safety') {
           if (err?.requestId) parts.push(`ID: ${err.requestId}`);
           if (Array.isArray(err?.violations) && err.violations.length) {
-            parts.push(`Reason: ${err.violations.join(', ')}`);
+            parts.push(`${COPY.errors.reason}: ${err.violations.join(', ')}`);
           }
           return parts.join(' ');
         }
         if (err?.requestId) parts.push(`ID: ${err.requestId}`);
-        if (err?.raw && err.raw !== message) parts.push(`Details: ${err.raw}`);
+        if (err?.raw && err.raw !== message) parts.push(`${COPY.errors.details}: ${err.raw}`);
         return parts.join(' ');
       }
 
@@ -706,11 +993,11 @@
         $('modalDownload').href = item.src;
         $('modalDownload').download = downloadName(item);
         $('modalModel').textContent = modelLabel(item.model);
-        $('modalPrompt').textContent = item.prompt || 'Not available';
-        $('modalAspectRatio').textContent = item.aspectRatio || 'Not available';
+        $('modalPrompt').textContent = item.prompt || COPY.notAvailable;
+        $('modalAspectRatio').textContent = item.aspectRatio || COPY.notAvailable;
         $('modalQuality').textContent = qualityLabel(item.quality);
-        $('modalResolution').textContent = item.resolution || 'Not available';
-        $('modalSize').textContent = item.size || 'Not available';
+        $('modalResolution').textContent = item.resolution || COPY.notAvailable;
+        $('modalSize').textContent = item.size || COPY.notAvailable;
         $('imageModal').classList.remove('hidden');
         document.body.classList.add('overflow-hidden');
         trackEvent('image_modal_opened', analyticsContext());
@@ -730,6 +1017,7 @@
       });
       document.addEventListener('keydown', (e) => {
         if (e.key === 'Escape' && !$('imageModal').classList.contains('hidden')) closeModal();
+        if (e.key === 'Escape' && !$('settingsModal').classList.contains('hidden')) closeSettingsModal();
       });
       function editImage(id) {
         const item = generatedImages.find((img) => img.id === id);
