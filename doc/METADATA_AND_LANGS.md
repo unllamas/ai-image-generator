@@ -41,6 +41,35 @@ The current static `index.html` metadata includes:
 - Theme/color-scheme metadata
 - Referrer policy metadata
 
+## Landing Content Strategy
+
+The page keeps the generator as the first screen and uses the space below the gallery for SEO and conversion content.
+
+Current content sections:
+
+- Multi-model AI image generator positioning.
+- Short explanation of what the project does.
+- How it works in three steps.
+- Bring your own API key explanation.
+- Hosted access waitlist CTA for users without a provider account.
+- Use cases for visual exploration.
+- FAQ about API keys, storage, providers, and hosted access.
+
+Primary funnel:
+
+```text
+Technical user -> Connect Vercel AI Gateway API key -> Generate images
+Non-technical user -> Request hosted access -> Tally waitlist
+```
+
+The Tally links currently use this placeholder:
+
+```text
+https://tally.so/r/REPLACE_WITH_FORM_ID
+```
+
+Replace it with the production Tally form URL before launch.
+
 Most metadata is written directly in `index.html` because the current product only supports English. The server only injects environment-dependent values:
 
 - `__SITE_URL__`

@@ -70,8 +70,9 @@
     <script src="https://cdn.tailwindcss.com"></script>
   </head>
   <body class="bg-neutral-950 text-neutral-200 min-h-screen font-sans">
-    <div class="max-w-6xl mx-auto px-4 py-4 md:px-8 md:py-6 space-y-10">
-      <nav class="flex items-center justify-between gap-3">
+    <!-- Navbar -->
+    <nav class="flex items-center gap-3">
+      <div class="flex items-center justify-between w-full max-w-xl h-16 mx-auto px-4">
         <a href="__SITE_URL__/" class="text-sm font-semibold text-white">AI Image Playground</a>
         <div class="flex items-center gap-2">
           <button
@@ -82,10 +83,13 @@
             Settings
           </button>
         </div>
-      </nav>
+      </div>
+    </nav>
 
-      <header class="mx-auto max-w-xl text-center space-y-5 pt-6 md:pt-12">
-        <div class="space-y-3">
+    <!-- Hero -->
+    <header class="py-20">
+      <div class="flex flex-col gap-4 w-full max-w-xl mx-auto px-4">
+        <div class="space-y-3 text-center">
           <h1 class="text-4xl md:text-6xl font-semibold text-white">AI Image Generator Playground</h1>
           <p class="mx-auto max-w-2xl text-sm md:text-base leading-7 text-neutral-400">
             Generate and compare images across GPT Image, Gemini, and future AI providers in one focused workspace.
@@ -184,14 +188,205 @@
 
           <p id="error" class="mt-3 text-red-400 text-sm hidden"></p>
         </section>
-      </header>
+      </div>
+    </header>
 
-      <section class="space-y-3">
-        <div class="flex items-center justify-between">
+    <!-- Images -->
+    <section class="">
+      <div class="flex flex-col gap-4 w-full max-w-6xl mx-auto px-4">
+        <div class="flex items-center justify-between w-full max-w-xl mx-auto">
           <h2 class="text-sm font-medium text-white">Generated images</h2>
           <p id="galleryHint" class="text-xs text-neutral-500">Your latest outputs and experiments</p>
         </div>
         <div id="results" class="columns-2 md:columns-3 gap-3"></div>
+      </div>
+    </section>
+
+    <div class="flex flex-col gap-20 w-full max-w-xl mx-auto px-4">
+      <!-- Multi-model -->
+      <section class="mt-20 pt-20 border-t border-neutral-900">
+        <div class="flex flex-col gap-4">
+          <div class="space-y-3">
+            <p class="text-xs uppercase text-neutral-500">Multi-model AI image generator</p>
+            <h2 class="text-2xl md:text-3xl font-semibold text-white">Generate AI images across multiple models</h2>
+            <p class="text-sm leading-7 text-neutral-400">
+              AI Image Playground is a browser-based workspace for generating and comparing images across GPT Image,
+              Gemini, and future AI image providers. Write one prompt, choose a model, tune the aspect ratio and
+              quality, then keep each experiment organized in a local gallery.
+            </p>
+          </div>
+          <div class="grid gap-3 sm:grid-cols-2">
+            <article class="rounded-xl border border-neutral-800 bg-neutral-900/50 p-4">
+              <h3 class="text-sm font-medium text-white">Compare model behavior</h3>
+              <p class="mt-2 text-sm leading-6 text-neutral-400">
+                Test how GPT Image and Gemini interpret the same prompt without switching tools.
+              </p>
+            </article>
+            <article class="rounded-xl border border-neutral-800 bg-neutral-900/50 p-4">
+              <h3 class="text-sm font-medium text-white">Keep generation context</h3>
+              <p class="mt-2 text-sm leading-6 text-neutral-400">
+                Store prompt, model, aspect ratio, quality, resolution, and output metadata with each image.
+              </p>
+            </article>
+            <article class="rounded-xl border border-neutral-800 bg-neutral-900/50 p-4">
+              <h3 class="text-sm font-medium text-white">Use reference images</h3>
+              <p class="mt-2 text-sm leading-6 text-neutral-400">
+                Attach visual references when a model supports image-guided generation or editing.
+              </p>
+            </article>
+            <article class="rounded-xl border border-neutral-800 bg-neutral-900/50 p-4">
+              <h3 class="text-sm font-medium text-white">Stay in control</h3>
+              <p class="mt-2 text-sm leading-6 text-neutral-400">
+                Bring your own provider key, keep usage tied to your account, and avoid hidden shared-credit limits.
+              </p>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <!-- Steps -->
+      <section class="flex flex-col gap-4">
+        <div class="p-4">
+          <p class="text-xs uppercase text-neutral-500">Step 1</p>
+          <h3 class="mt-3 text-base font-medium text-white">Write a prompt</h3>
+          <p class="mt-2 text-sm leading-6 text-neutral-400">
+            Describe the image you want and optionally add reference images for visual guidance.
+          </p>
+        </div>
+        <div class="p-4">
+          <p class="text-xs uppercase text-neutral-500">Step 2</p>
+          <h3 class="mt-3 text-base font-medium text-white">Choose a model</h3>
+          <p class="mt-2 text-sm leading-6 text-neutral-400">
+            Pick GPT Image, Gemini Flash Image, Gemini Pro Image, or future providers as they become available.
+          </p>
+        </div>
+        <div class="p-4">
+          <p class="text-xs uppercase text-neutral-500">Step 3</p>
+          <h3 class="mt-3 text-base font-medium text-white">Generate with your API key</h3>
+          <p class="mt-2 text-sm leading-6 text-neutral-400">
+            Connect Vercel AI Gateway and generate through your own provider account.
+          </p>
+        </div>
+      </section>
+
+      <!-- You api -->
+      <section id="api-key" class="flex flex-col gap-4 p-8 rounded-2xl border border-neutral-800 bg-neutral-900/40">
+        <div class="space-y-3">
+          <p class="text-xs uppercase text-neutral-500">Bring your own API key</p>
+          <h2 class="text-2xl font-semibold text-white">Use your Vercel AI Gateway key</h2>
+          <p class="text-sm leading-7 text-neutral-400">
+            An API key is a private access token that lets this app send image generation requests through your provider
+            account. Your key is stored in your browser and sent only when you generate an image.
+          </p>
+          <div class="flex flex-wrap gap-2 pt-1 text-xs text-neutral-300">
+            <span class="rounded-full border border-neutral-800 bg-neutral-950 px-3 py-1.5">Local key storage</span>
+            <span class="rounded-full border border-neutral-800 bg-neutral-950 px-3 py-1.5">Your usage controls</span>
+            <span class="rounded-full border border-neutral-800 bg-neutral-950 px-3 py-1.5">No shared credits</span>
+          </div>
+        </div>
+        <div class="rounded-xl border border-neutral-800 bg-neutral-950 p-4">
+          <h3 class="text-sm font-medium text-white">Don’t have an API key?</h3>
+          <p class="mt-2 text-sm leading-6 text-neutral-400">
+            We are exploring a hosted version for users who want to generate images without setting up a provider
+            account. Join the waitlist and tell us what you need.
+          </p>
+          <div class="mt-4 flex flex-col gap-2 sm:flex-row">
+            <a
+              href="https://tally.so/r/REPLACE_WITH_FORM_ID"
+              target="_blank"
+              rel="noreferrer"
+              data-lead-cta="hosted_access_section"
+              class="inline-flex justify-center rounded-full bg-white px-4 py-2 text-sm font-medium text-black hover:bg-neutral-200"
+            >
+              Request hosted access
+            </a>
+            <a
+              href="https://vercel.com/docs/ai-gateway"
+              target="_blank"
+              rel="noreferrer"
+              data-lead-cta="vercel_docs_section"
+              class="inline-flex justify-center rounded-full border border-neutral-800 bg-neutral-900 px-4 py-2 text-sm text-white hover:bg-neutral-800"
+            >
+              Get a Vercel key
+            </a>
+          </div>
+        </div>
+      </section>
+
+      <!-- Use cases -->
+      <section class="space-y-4">
+        <div class="space-y-2">
+          <p class="text-xs uppercase text-neutral-500">Use cases</p>
+          <h2 class="text-2xl font-semibold text-white">Built for fast visual exploration</h2>
+        </div>
+        <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          <article class="rounded-xl border border-neutral-800 p-4">
+            <h3 class="text-sm font-medium text-white">Product concepts</h3>
+            <p class="mt-2 text-sm leading-6 text-neutral-400">
+              Explore product shots, mockups, and visual directions.
+            </p>
+          </article>
+          <article class="rounded-xl border border-neutral-800 p-4">
+            <h3 class="text-sm font-medium text-white">Social creatives</h3>
+            <p class="mt-2 text-sm leading-6 text-neutral-400">
+              Generate campaign visuals, thumbnails, and content ideas.
+            </p>
+          </article>
+          <article class="rounded-xl border border-neutral-800 p-4">
+            <h3 class="text-sm font-medium text-white">Character studies</h3>
+            <p class="mt-2 text-sm leading-6 text-neutral-400">Iterate on people, outfits, expressions, and styles.</p>
+          </article>
+          <article class="rounded-xl border border-neutral-800 p-4">
+            <h3 class="text-sm font-medium text-white">Moodboards</h3>
+            <p class="mt-2 text-sm leading-6 text-neutral-400">
+              Compare visual directions before committing to production.
+            </p>
+          </article>
+          <article class="rounded-xl border border-neutral-800 p-4">
+            <h3 class="text-sm font-medium text-white">Ad variations</h3>
+            <p class="mt-2 text-sm leading-6 text-neutral-400">Test framing, formats, and prompt variations quickly.</p>
+          </article>
+          <article class="rounded-xl border border-neutral-800 p-4">
+            <h3 class="text-sm font-medium text-white">Prompt testing</h3>
+            <p class="mt-2 text-sm leading-6 text-neutral-400">See which model follows your prompt most closely.</p>
+          </article>
+        </div>
+      </section>
+
+      <!-- FAQs -->
+      <section class="space-y-4 pb-10">
+        <div class="space-y-2">
+          <p class="text-xs uppercase text-neutral-500">FAQ</p>
+          <h2 class="text-2xl font-semibold text-white">Questions before generating</h2>
+        </div>
+        <div class="flex flex-col gap-2">
+          <article class="rounded-xl border border-neutral-800 p-4">
+            <h3 class="text-sm font-medium text-white">What is an AI image playground?</h3>
+            <p class="mt-2 text-sm leading-6 text-neutral-400">
+              It is a workspace for testing prompts, comparing image models, and keeping generated outputs organized.
+            </p>
+          </article>
+          <article class="rounded-xl border border-neutral-800 p-4">
+            <h3 class="text-sm font-medium text-white">Why do I need an API key?</h3>
+            <p class="mt-2 text-sm leading-6 text-neutral-400">
+              The current version sends requests through your Vercel AI Gateway account so you control usage and
+              billing.
+            </p>
+          </article>
+          <article class="rounded-xl border border-neutral-800 p-4">
+            <h3 class="text-sm font-medium text-white">Do you store my API key?</h3>
+            <p class="mt-2 text-sm leading-6 text-neutral-400">
+              Your API key is saved in your browser’s local storage and is not written to this server’s logs.
+            </p>
+          </article>
+          <article class="rounded-xl border border-neutral-800 p-4">
+            <h3 class="text-sm font-medium text-white">What if I do not have a provider account?</h3>
+            <p class="mt-2 text-sm leading-6 text-neutral-400">
+              Request hosted access through the waitlist so we can measure demand before building a managed credit
+              system.
+            </p>
+          </article>
+        </div>
       </section>
     </div>
 
@@ -246,17 +441,29 @@
             >
               <p class="font-medium text-white">Do you already have an API key?</p>
               <p class="mt-1 text-neutral-400">
-                If you do, configure it here. If not, open the provider form and come back when it is ready.
+                If you do, configure it here. If not, request hosted access or create a Vercel AI Gateway key.
               </p>
-              <a
-                id="providerSignup"
-                href="https://vercel.com/docs/ai-gateway"
-                target="_blank"
-                rel="noreferrer"
-                class="mt-3 inline-flex bg-neutral-800 hover:bg-neutral-700 rounded-full px-3 py-2 text-xs text-white"
-              >
-                Get an API key
-              </a>
+              <div class="mt-3 flex flex-wrap gap-2">
+                <a
+                  id="providerSignup"
+                  href="https://tally.so/r/REPLACE_WITH_FORM_ID"
+                  target="_blank"
+                  rel="noreferrer"
+                  data-lead-cta="hosted_access_modal"
+                  class="inline-flex bg-white hover:bg-neutral-200 rounded-full px-3 py-2 text-xs font-medium text-black"
+                >
+                  Request hosted access
+                </a>
+                <a
+                  href="https://vercel.com/docs/ai-gateway"
+                  target="_blank"
+                  rel="noreferrer"
+                  data-lead-cta="vercel_docs_modal"
+                  class="inline-flex bg-neutral-800 hover:bg-neutral-700 rounded-full px-3 py-2 text-xs text-white"
+                >
+                  Get a Vercel key
+                </a>
+              </div>
             </div>
           </div>
           <div class="border-t border-neutral-800 p-5 flex justify-end gap-2">
@@ -489,7 +696,9 @@
         $('settingsTitle').textContent =
           mode === 'onboarding' ? settingsModal.dataset.onboardingTitle : settingsModal.dataset.defaultTitle;
         $('settingsDescription').textContent =
-          mode === 'onboarding' ? settingsModal.dataset.onboardingDescription : settingsModal.dataset.defaultDescription;
+          mode === 'onboarding'
+            ? settingsModal.dataset.onboardingDescription
+            : settingsModal.dataset.defaultDescription;
         $('settingsOnboarding').classList.toggle('hidden', mode !== 'onboarding');
         settingsModal.classList.remove('hidden');
         document.body.classList.add('overflow-hidden');
@@ -553,6 +762,14 @@
       });
       $('quality').addEventListener('change', () => {
         trackEvent('generation_option_changed', analyticsContext());
+      });
+      document.querySelectorAll('[data-lead-cta]').forEach((link) => {
+        link.addEventListener('click', () => {
+          trackEvent('lead_cta_clicked', {
+            ...analyticsContext(),
+            action: link.dataset.leadCta,
+          });
+        });
       });
 
       $('uploadBtn').onclick = () => $('fileInput').click();
@@ -724,7 +941,7 @@
         const placeholdersHtml = showPlaceholders
           ? Array.from(
               { length: 6 },
-            (_, index) => `
+              (_, index) => `
         <div class="mb-3 break-inside-avoid aspect-square rounded-xl border border-neutral-800 bg-neutral-900/70 overflow-hidden relative">
           <div class="absolute inset-0 bg-[repeating-linear-gradient(45deg,#262626_0_1px,transparent_1px_9px)] opacity-60"></div>
           <div class="absolute left-3 top-3 rounded-full bg-black/50 border border-white/10 px-2.5 py-1 text-[11px] text-neutral-300">
