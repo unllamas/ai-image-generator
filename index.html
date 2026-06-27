@@ -1,16 +1,16 @@
 <!doctype html>
-<html lang="en" class="dark">
+<html lang="__LANG__" class="dark">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>AI Image Generator Playground | Compare GPT and Gemini Models</title>
+    <title>__META_TITLE__</title>
     <meta
       name="description"
-      content="Generate, edit, and compare AI images across GPT Image, Gemini, and future image providers from one multi-model playground."
+      content="__META_DESCRIPTION__"
     />
     <meta
       name="keywords"
-      content="ai image generator, ai image playground, generate ai image, GPT image generator, Gemini image generator, multi model image generator"
+      content="__META_KEYWORDS__"
     />
     <meta name="robots" content="index, follow, max-image-preview:large" />
     <meta name="author" content="AI Image Playground" />
@@ -19,29 +19,31 @@
     <meta name="color-scheme" content="dark" />
     <meta name="referrer" content="strict-origin-when-cross-origin" />
     <meta name="format-detection" content="telephone=no" />
-    <link rel="canonical" href="__SITE_URL__/" />
-    <link rel="alternate" hreflang="en" href="__SITE_URL__/" />
-    <link rel="alternate" hreflang="es" href="__SITE_URL__/es/" />
+    <link rel="canonical" href="__CANONICAL_URL__" />
+    <link rel="alternate" hreflang="en" href="__EN_URL__" />
+    <link rel="alternate" hreflang="es" href="__ES_URL__" />
     <link rel="alternate" hreflang="x-default" href="__SITE_URL__/" />
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="AI Image Playground" />
-    <meta property="og:title" content="AI Image Generator Playground" />
+    <meta property="og:title" content="__OG_TITLE__" />
     <meta
       property="og:description"
-      content="Generate and compare images across GPT Image, Gemini, and future AI image providers in one workflow."
+      content="__OG_DESCRIPTION__"
     />
-    <meta property="og:url" content="__SITE_URL__/" />
-    <meta property="og:locale" content="en_US" />
+    <meta property="og:url" content="__CANONICAL_URL__" />
+    <meta property="og:locale" content="__OG_LOCALE__" />
+    <meta property="og:locale:alternate" content="__OG_LOCALE_ALTERNATE__" />
     <meta name="twitter:card" content="summary" />
-    <meta name="twitter:title" content="AI Image Generator Playground" />
+    <meta name="twitter:title" content="__OG_TITLE__" />
     <meta
       name="twitter:description"
-      content="A multi-model AI image generator playground for GPT Image, Gemini, and future providers."
+      content="__OG_DESCRIPTION__"
     />
     <script>
       window.APP_CONFIG = {
         gaMeasurementId: '__GA_MEASUREMENT_ID__',
         siteUrl: '__SITE_URL__',
+        locale: '__LANG__',
       };
     </script>
     <script type="application/ld+json">
@@ -49,11 +51,11 @@
         "@context": "https://schema.org",
         "@type": "WebApplication",
         "name": "AI Image Playground",
-        "alternateName": "AI Image Generator Playground",
-        "url": "__SITE_URL__/",
+        "alternateName": "__OG_TITLE__",
+        "url": "__CANONICAL_URL__",
         "applicationCategory": "DesignApplication",
         "operatingSystem": "Web",
-        "description": "Generate, edit, and compare AI images across GPT Image, Gemini, and future image providers from one multi-model playground.",
+        "description": "__META_DESCRIPTION__",
         "featureList": [
           "AI image generation",
           "Multi-model image comparison",
@@ -74,7 +76,11 @@
     <div class="max-w-5xl mx-auto p-4 md:p-8 space-y-6">
       <header class="flex flex-col md:flex-row md:items-center justify-between gap-3">
         <h1 class="text-xl font-semibold text-white">AI Image Generator Playground</h1>
-        <div class="flex gap-2">
+        <div class="flex flex-col sm:flex-row gap-2">
+          <nav class="flex bg-neutral-900 border border-neutral-800 rounded-lg p-1 text-xs" aria-label="Language">
+            <a href="__EN_URL__?lang=en" class="rounded-md px-2.5 py-2 __EN_ACTIVE_CLASS__" hreflang="en">EN</a>
+            <a href="__ES_URL__" class="rounded-md px-2.5 py-2 __ES_ACTIVE_CLASS__" hreflang="es">ES</a>
+          </nav>
           <input
             id="apiKey"
             type="password"

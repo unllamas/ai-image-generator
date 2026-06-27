@@ -26,9 +26,10 @@ This avoids competing only as a generic single-provider image generator. The pro
 
 ## Implemented Metadata
 
-The current `index.html` includes:
+The current localized render includes:
 
-- `<html lang="en">`
+- `<html lang="en">` for `/`
+- `<html lang="es">` for `/es/`
 - SEO title
 - Meta description
 - Robots directive
@@ -61,13 +62,14 @@ GA_MEASUREMENT_ID=G-XXXXXXXXXX npm start
 Current canonical:
 
 ```html
-<link rel="canonical" href="__SITE_URL__/" />
+<link rel="canonical" href="__CANONICAL_URL__" />
 ```
 
-In production, this becomes:
+In production, these become:
 
 ```html
 <link rel="canonical" href="https://ai-image-generator.example.com/" />
+<link rel="canonical" href="https://ai-image-generator.example.com/es/" />
 ```
 
 ## Language Strategy
@@ -97,6 +99,33 @@ Avoid for primary SEO pages:
 
 Query params are acceptable for product preferences, debugging, and experiments, but language pages should have stable crawlable URLs.
 
+## Automatic Language Detection
+
+The server checks `Accept-Language` only when the user enters `/`.
+
+Behavior:
+
+- Browser prefers Spanish: `GET /` returns a `302` redirect to `/es/`.
+- User explicitly requests English: `GET /?lang=en` serves English and does not redirect.
+- `GET /es/` always serves Spanish.
+- `GET /es` returns a `301` redirect to `/es/`.
+- `GET /index.html` serves English.
+
+This gives Spanish-speaking users a better first visit while keeping stable crawlable language URLs.
+
+Do not use `?lang=es` as the canonical Spanish page.
+
+## Language Switcher
+
+The header includes a language switcher:
+
+```text
+EN -> /?lang=en
+ES -> /es/
+```
+
+The English link includes `?lang=en` so a Spanish browser can intentionally stay on English instead of being auto-redirected.
+
 ## Hreflang
 
 Current placeholders:
@@ -113,14 +142,10 @@ When `/es/` exists, both English and Spanish pages must link to each other with 
 
 Phase 1:
 
-- Keep the app UI in English.
-- Add SEO docs and landing copy in English.
-- Prepare `hreflang` placeholders.
-
-Phase 2:
-
-- Add `/es/` as a separate localized route/page.
-- Translate only stable marketing and instructional copy.
+- Serve `/` in English.
+- Serve `/es/` in Spanish.
+- Add reciprocal `hreflang`.
+- Add a header language switcher.
 - Keep generated image history local to the browser.
 
 Phase 3:

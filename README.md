@@ -68,6 +68,10 @@ Y para ver los eventos en consola:
 http://127.0.0.1:3000/?analytics_debug=1
 ```
 
+## Idiomas
+
+La app sirve ingles en `/` y español en `/es/`. Si el usuario entra a `/` con el navegador configurado en español, el servidor lo redirige a `/es/`, salvo que entre explicitamente con `?lang=en`.
+
 ## Privacidad
 
 La instrumentacion esta pensada para produccion sin exponer informacion sensible.
@@ -109,5 +113,6 @@ Config minima recomendada:
 ## Scripts
 
 ```bash
+npm run check
 npm start
 ```
