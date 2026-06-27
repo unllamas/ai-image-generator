@@ -50,7 +50,8 @@ Current content sections:
 - Multi-model AI image generator positioning.
 - Short explanation of what the project does.
 - How it works in three steps.
-- Bring your own API key explanation.
+- Pricing-style access cards: self-managed API key vs managed hosted access.
+- Compact provider coverage chips with current and future image provider candidates.
 - Hosted access waitlist CTA for users without a provider account.
 - Use cases for visual exploration.
 - FAQ about API keys, storage, providers, and hosted access.
@@ -58,9 +59,26 @@ Current content sections:
 Primary funnel:
 
 ```text
-Technical user -> Connect Vercel AI Gateway API key -> Generate images
+Technical user -> Connect supported provider API key -> Generate images
 Non-technical user -> Request hosted access -> Tally waitlist
 ```
+
+Current provider status shown on the page:
+
+```text
+Supported today:
+- Vercel AI Gateway
+
+Future candidates:
+- OpenAI direct
+- Google Gemini direct
+- OpenRouter
+- fal
+- Black Forest Labs
+- Replicate / Stability AI
+```
+
+The provider table should stay conservative. Only mark a provider as supported when the backend has a working implementation and the UI can route requests to it.
 
 The Tally links currently use this placeholder:
 

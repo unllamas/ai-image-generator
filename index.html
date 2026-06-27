@@ -264,51 +264,98 @@
           <p class="text-xs uppercase text-neutral-500">Step 3</p>
           <h3 class="mt-3 text-base font-medium text-white">Generate with your API key</h3>
           <p class="mt-2 text-sm leading-6 text-neutral-400">
-            Connect Vercel AI Gateway and generate through your own provider account.
+            Connect a supported provider and generate through your own account.
           </p>
         </div>
       </section>
 
       <!-- You api -->
-      <section id="api-key" class="flex flex-col gap-4 p-8 rounded-2xl border border-neutral-800 bg-neutral-900/40">
-        <div class="space-y-3">
-          <p class="text-xs uppercase text-neutral-500">Bring your own API key</p>
-          <h2 class="text-2xl font-semibold text-white">Use your Vercel AI Gateway key</h2>
+      <section
+        id="api-key"
+        tabindex="-1"
+        class="flex flex-col gap-6 border-t border-neutral-900 pt-10 transition md:pt-14"
+      >
+        <div class="max-w-2xl space-y-2">
+          <p class="text-xs uppercase text-neutral-500">Access options</p>
+          <h2 class="text-2xl md:text-3xl font-semibold text-white">Free app. Optional hosted access.</h2>
           <p class="text-sm leading-7 text-neutral-400">
-            An API key is a private access token that lets this app send image generation requests through your provider
-            account. Your key is stored in your browser and sent only when you generate an image.
+            Start with your own provider key. Join the waitlist if you want us to handle providers, credits, and
+            billing.
           </p>
-          <div class="flex flex-wrap gap-2 pt-1 text-xs text-neutral-300">
-            <span class="rounded-full border border-neutral-800 bg-neutral-950 px-3 py-1.5">Local key storage</span>
-            <span class="rounded-full border border-neutral-800 bg-neutral-950 px-3 py-1.5">Your usage controls</span>
-            <span class="rounded-full border border-neutral-800 bg-neutral-950 px-3 py-1.5">No shared credits</span>
-          </div>
         </div>
-        <div class="rounded-xl border border-neutral-800 bg-neutral-950 p-4">
-          <h3 class="text-sm font-medium text-white">Don’t have an API key?</h3>
-          <p class="mt-2 text-sm leading-6 text-neutral-400">
-            We are exploring a hosted version for users who want to generate images without setting up a provider
-            account. Join the waitlist and tell us what you need.
-          </p>
-          <div class="mt-4 flex flex-col gap-2 sm:flex-row">
-            <a
-              href="https://tally.so/r/REPLACE_WITH_FORM_ID"
-              target="_blank"
-              rel="noreferrer"
-              data-lead-cta="hosted_access_section"
-              class="inline-flex justify-center rounded-full bg-white px-4 py-2 text-sm font-medium text-black hover:bg-neutral-200"
+
+        <div class="flex flex-col md:flex-row w-full gap-4">
+          <article class="w-full p-4 rounded-2xl">
+            <div class="flex items-start justify-between gap-3">
+              <div>
+                <h3 class="text-lg font-semibold text-white">Self-managed</h3>
+                <p class="mt-1 text-sm text-neutral-500">Bring your own key</p>
+              </div>
+              <span class="rounded-full bg-white px-3 py-1 text-xs font-medium text-black">Available</span>
+            </div>
+            <p class="mt-5 text-3xl font-semibold text-white">Free</p>
+            <p class="mt-1 text-sm text-neutral-500">Provider usage billed to you</p>
+            <ul class="mt-5 space-y-2 text-sm text-neutral-300">
+              <li>Use supported provider keys</li>
+              <li>Keep usage under your account</li>
+              <li>No shared credit pool</li>
+            </ul>
+            <div class="mt-5">
+              <button
+                type="button"
+                onclick="openSettingsModal()"
+                class="inline-flex w-full justify-center rounded-full bg-white px-4 py-2 text-sm font-medium text-black hover:bg-neutral-200"
+              >
+                Configure provider
+              </button>
+            </div>
+          </article>
+
+          <article class="w-full p-4 bg-neutral-900/40 border border-neutral-700 rounded-3xl">
+            <div class="flex items-start justify-between gap-3">
+              <div>
+                <h3 class="text-lg font-semibold text-white">Managed</h3>
+                <p class="mt-1 text-sm text-neutral-500">No provider setup</p>
+              </div>
+              <span class="rounded-full border border-neutral-700 px-3 py-1 text-xs font-medium text-neutral-300">
+                Waitlist
+              </span>
+            </div>
+            <p class="mt-5 text-3xl font-semibold text-white">Paid</p>
+            <p class="mt-1 text-sm text-neutral-500">Hosted credits and billing later</p>
+            <ul class="mt-5 space-y-2 text-sm text-neutral-300">
+              <li>We handle provider access</li>
+              <li>No API key required</li>
+              <li>Help us validate demand</li>
+            </ul>
+            <div class="mt-5">
+              <a
+                href="https://tally.so/r/REPLACE_WITH_FORM_ID"
+                target="_blank"
+                rel="noreferrer"
+                data-lead-cta="managed_access_card"
+                class="inline-flex w-full justify-center rounded-full border border-neutral-800 bg-neutral-900 px-4 py-2 text-sm text-white hover:bg-neutral-800"
+              >
+                Join waitlist
+              </a>
+            </div>
+          </article>
+        </div>
+
+        <div class="space-y-4">
+          <p class="text-xs uppercase text-neutral-500">Provider coverage</p>
+          <div class="flex flex-wrap gap-2 text-xs">
+            <span class="rounded-full bg-emerald-400/10 px-3 py-1.5 text-emerald-300"
+              >Vercel AI Gateway · supported</span
             >
-              Request hosted access
-            </a>
-            <a
-              href="https://vercel.com/docs/ai-gateway"
-              target="_blank"
-              rel="noreferrer"
-              data-lead-cta="vercel_docs_section"
-              class="inline-flex justify-center rounded-full border border-neutral-800 bg-neutral-900 px-4 py-2 text-sm text-white hover:bg-neutral-800"
+            <span class="rounded-full border border-neutral-800 px-3 py-1.5 text-neutral-300">OpenAI</span>
+            <span class="rounded-full border border-neutral-800 px-3 py-1.5 text-neutral-300">Gemini</span>
+            <span class="rounded-full border border-neutral-800 px-3 py-1.5 text-neutral-300">OpenRouter</span>
+            <span class="rounded-full border border-neutral-800 px-3 py-1.5 text-neutral-300">fal</span>
+            <span class="rounded-full border border-neutral-800 px-3 py-1.5 text-neutral-300">Black Forest Labs</span>
+            <span class="rounded-full border border-neutral-800 px-3 py-1.5 text-neutral-300"
+              >Replicate / Stability</span
             >
-              Get a Vercel key
-            </a>
           </div>
         </div>
       </section>
@@ -319,7 +366,7 @@
           <p class="text-xs uppercase text-neutral-500">Use cases</p>
           <h2 class="text-2xl font-semibold text-white">Built for fast visual exploration</h2>
         </div>
-        <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           <article class="rounded-xl border border-neutral-800 p-4">
             <h3 class="text-sm font-medium text-white">Product concepts</h3>
             <p class="mt-2 text-sm leading-6 text-neutral-400">
@@ -369,8 +416,7 @@
           <article class="rounded-xl border border-neutral-800 p-4">
             <h3 class="text-sm font-medium text-white">Why do I need an API key?</h3>
             <p class="mt-2 text-sm leading-6 text-neutral-400">
-              The current version sends requests through your Vercel AI Gateway account so you control usage and
-              billing.
+              The self-managed mode sends requests through your provider account so you control usage and billing.
             </p>
           </article>
           <article class="rounded-xl border border-neutral-800 p-4">
@@ -395,8 +441,6 @@
       class="fixed inset-0 z-50 hidden bg-black/80 p-4"
       data-default-title="Settings"
       data-default-description="Select a provider and save your API key to start generating images."
-      data-onboarding-title="Connect a provider"
-      data-onboarding-description="Set up a provider and API key before generating your first image."
     >
       <div class="min-h-full flex items-center justify-center">
         <div class="w-full max-w-md rounded-2xl border border-neutral-800 bg-neutral-950 shadow-2xl">
@@ -434,36 +478,6 @@
                 placeholder="Vercel AI Gateway API Key"
                 class="mt-2 w-full bg-neutral-900 border border-neutral-800 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-neutral-600"
               />
-            </div>
-            <div
-              id="settingsOnboarding"
-              class="hidden rounded-xl border border-neutral-800 bg-neutral-900 p-4 text-sm text-neutral-300"
-            >
-              <p class="font-medium text-white">Do you already have an API key?</p>
-              <p class="mt-1 text-neutral-400">
-                If you do, configure it here. If not, request hosted access or create a Vercel AI Gateway key.
-              </p>
-              <div class="mt-3 flex flex-wrap gap-2">
-                <a
-                  id="providerSignup"
-                  href="https://tally.so/r/REPLACE_WITH_FORM_ID"
-                  target="_blank"
-                  rel="noreferrer"
-                  data-lead-cta="hosted_access_modal"
-                  class="inline-flex bg-white hover:bg-neutral-200 rounded-full px-3 py-2 text-xs font-medium text-black"
-                >
-                  Request hosted access
-                </a>
-                <a
-                  href="https://vercel.com/docs/ai-gateway"
-                  target="_blank"
-                  rel="noreferrer"
-                  data-lead-cta="vercel_docs_modal"
-                  class="inline-flex bg-neutral-800 hover:bg-neutral-700 rounded-full px-3 py-2 text-xs text-white"
-                >
-                  Get a Vercel key
-                </a>
-              </div>
             </div>
           </div>
           <div class="border-t border-neutral-800 p-5 flex justify-end gap-2">
@@ -688,18 +702,13 @@
         return config.provider === DEFAULT_PROVIDER && Boolean(config.apiKey);
       }
 
-      function openSettingsModal(mode = 'settings') {
+      function openSettingsModal() {
         const config = providerConfig();
         const settingsModal = $('settingsModal');
         $('provider').value = config.provider || DEFAULT_PROVIDER;
         $('apiKey').value = config.apiKey;
-        $('settingsTitle').textContent =
-          mode === 'onboarding' ? settingsModal.dataset.onboardingTitle : settingsModal.dataset.defaultTitle;
-        $('settingsDescription').textContent =
-          mode === 'onboarding'
-            ? settingsModal.dataset.onboardingDescription
-            : settingsModal.dataset.defaultDescription;
-        $('settingsOnboarding').classList.toggle('hidden', mode !== 'onboarding');
+        $('settingsTitle').textContent = settingsModal.dataset.defaultTitle;
+        $('settingsDescription').textContent = settingsModal.dataset.defaultDescription;
         settingsModal.classList.remove('hidden');
         document.body.classList.add('overflow-hidden');
         setTimeout(() => $('apiKey').focus(), 0);
@@ -708,6 +717,15 @@
       function closeSettingsModal() {
         $('settingsModal').classList.add('hidden');
         document.body.classList.remove('overflow-hidden');
+      }
+
+      function scrollToAccessOptions() {
+        const accessSection = $('api-key');
+        accessSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        accessSection.focus({ preventScroll: true });
+        accessSection.classList.add('border-white');
+        setTimeout(() => accessSection.classList.remove('border-white'), 1800);
+        trackEvent('access_options_prompted', analyticsContext());
       }
 
       $('settingsOpen').onclick = () => openSettingsModal();
@@ -1112,7 +1130,7 @@
           return showError(COPY.errors.promptTooLong(MAX_PROMPT_CHARS));
         }
         if (!hasProviderConfig()) {
-          openSettingsModal('onboarding');
+          scrollToAccessOptions();
           return;
         }
 
