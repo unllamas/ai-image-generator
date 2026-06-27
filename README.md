@@ -43,6 +43,7 @@ Variables utiles:
 ```bash
 PORT=3001 npm start
 HOST=0.0.0.0 npm start
+SITE_URL=https://ai-image-generator.example.com npm start
 ```
 
 ## Google Analytics
@@ -85,6 +86,11 @@ El frontend usa una whitelist en `trackEvent()` para limitar los parametros perm
 ## Eventos y logs
 
 La documentacion completa esta en [doc/EVENTS.md](doc/EVENTS.md).
+
+Documentacion adicional:
+
+- [Metadata y languages](doc/METADATA_AND_LANGS.md)
+- [Generacion de imagenes](doc/IMAGE_GENERATION.md)
 
 Resumen:
 

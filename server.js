@@ -1,5 +1,5 @@
 // ─────────────────────────────────────────────────────────────
-// MVP Backend — Vercel AI Gateway (imágenes)
+// MVP Backend — Vercel AI Gateway (images)
 // Node 18+ requerido (fetch/FormData/Blob nativos).
 // Ejecutar: node server.js
 // ─────────────────────────────────────────────────────────────
@@ -11,6 +11,7 @@ const PORT = process.env.PORT || 3000;
 const HOST = process.env.HOST || '127.0.0.1';
 const GATEWAY = 'https://ai-gateway.vercel.sh/v1';
 const GA_MEASUREMENT_ID = process.env.GA_MEASUREMENT_ID || '';
+const SITE_URL = (process.env.SITE_URL || `http://${HOST}:${PORT}`).replace(/\/+$/, '');
 const MAX_BODY_BYTES = 20 * 1024 * 1024;
 const MAX_REFERENCE_IMAGES = 5;
 const MAX_PROMPT_CHARS = 5000;
@@ -59,7 +60,7 @@ const MODEL_CONFIGS = {
   },
 };
 
-// Modelos soportados (escalable: agregar una entrada en MODEL_CONFIGS y en el front si debe aparecer en la UI)
+// Supported models: add an entry in MODEL_CONFIGS and in the front if it should appear in the UI.
 const ALLOWED_MODELS = Object.keys(MODEL_CONFIGS);
 
 const json = (res, status, payload) => {
@@ -70,6 +71,7 @@ const json = (res, status, payload) => {
 const serveIndex = (res) => {
   const html = fs
     .readFileSync(path.join(__dirname, 'index.html'), 'utf8')
+    .replaceAll('__SITE_URL__', SITE_URL)
     .replace('"__GA_MEASUREMENT_ID__"', JSON.stringify(GA_MEASUREMENT_ID));
   res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
   res.end(html);
@@ -143,16 +145,16 @@ const normalizeGatewayError = (status, data, headers) => {
 
   if (status === 401 || status === 403) {
     category = 'auth';
-    message = 'No se pudo autenticar con Vercel AI Gateway. Revisá que la API key sea válida y tenga permisos.';
+    message = 'Could not authenticate with Vercel AI Gateway. Check that the API key is valid and has permissions.';
   } else if (status === 404 || rawLower.includes('resource was not found')) {
     category = 'not_found';
-    message = 'El endpoint o modelo solicitado no está disponible en Vercel AI Gateway.';
+    message = 'The requested endpoint or model is not available in Vercel AI Gateway.';
   } else if (status === 429) {
     category = 'rate_limit';
-    message = 'Se alcanzó el límite de uso del proveedor o del gateway. Probá nuevamente en unos minutos.';
+    message = 'The provider or gateway usage limit was reached. Try again in a few minutes.';
   } else if (status === 400 || status === 422) {
     category = 'bad_request';
-    message = 'El proveedor rechazó la configuración enviada. Revisá modelo, tamaño, cantidad y opciones avanzadas.';
+    message = 'The provider rejected the submitted configuration. Check model, size, count, and advanced options.';
   }
 
   if (
@@ -163,7 +165,7 @@ const normalizeGatewayError = (status, data, headers) => {
   ) {
     category = 'safety';
     message =
-      'La solicitud fue rechazada por el sistema de seguridad del proveedor. Ajustá el prompt o las imágenes de referencia.';
+      'The request was rejected by the provider safety system. Adjust the prompt or reference images.';
   }
 
   return {
@@ -375,11 +377,11 @@ const runImageGeneration = async (input) => {
   }
   if (modelConfig.strategy === 'multimodal-files') {
     if (!generateText) {
-      throw new Error('La versión instalada de ai no expone generateText.');
+      throw new Error('The installed ai package version does not expose generateText.');
     }
     return generateMultimodalFiles(input);
   }
-  throw new Error(`Estrategia de generación no soportada: ${modelConfig.strategy}`);
+  throw new Error(`Unsupported generation strategy: ${modelConfig.strategy}`);
 };
 
 const normalizeSdkError = (err) => {
@@ -390,20 +392,20 @@ const normalizeSdkError = (err) => {
 
   if (rawLower.includes('api key') || rawLower.includes('unauthorized') || rawLower.includes('authentication')) {
     category = 'auth';
-    message = 'No se pudo autenticar con Vercel AI Gateway. Revisá que la API key sea válida y tenga permisos.';
+    message = 'Could not authenticate with Vercel AI Gateway. Check that the API key is valid and has permissions.';
   } else if (rawLower.includes('not found') || rawLower.includes('no such model')) {
     category = 'not_found';
-    message = 'El modelo solicitado no está disponible en Vercel AI Gateway.';
+    message = 'The requested model is not available in Vercel AI Gateway.';
   } else if (rawLower.includes('rate limit') || rawLower.includes('too many requests')) {
     category = 'rate_limit';
-    message = 'Se alcanzó el límite de uso del proveedor o del gateway. Probá nuevamente en unos minutos.';
+    message = 'The provider or gateway usage limit was reached. Try again in a few minutes.';
   } else if (
     rawLower.includes('safety') ||
     rawLower.includes('safety_violations') ||
     rawLower.includes('content policy')
   ) {
     category = 'safety';
-    message = 'No pudimos generar esta imagen porque el proveedor marcó el contenido como sensible.';
+    message = 'The image could not be generated because the provider flagged the content as sensitive.';
   }
 
   return {
@@ -431,7 +433,7 @@ const server = http.createServer((req, res) => {
     return;
   }
 
-  // ── Endpoint de generación ──
+  // ── Generation endpoint ──
   if (req.method === 'POST' && req.url === '/api/generate') {
     let body = '';
     let tooLarge = false;
@@ -456,7 +458,7 @@ const server = http.createServer((req, res) => {
         if (tooLarge) {
           return errorForRequest(413, {
             error: {
-              message: 'La solicitud es demasiado grande. Reducí la cantidad o tamaño de las imágenes de referencia.',
+              message: 'The request is too large. Reduce the number or size of reference images.',
               category: 'payload_too_large',
               status: 413,
             },
@@ -469,7 +471,7 @@ const server = http.createServer((req, res) => {
         } catch {
           return errorForRequest(400, {
             error: {
-              message: 'El cuerpo de la solicitud no es JSON válido.',
+              message: 'The request body is not valid JSON.',
               category: 'bad_json',
               status: 400,
             },
@@ -486,13 +488,13 @@ const server = http.createServer((req, res) => {
         }
         if (!prompt) {
           return errorForRequest(400, {
-            error: { message: 'El prompt es obligatorio.', category: 'validation', status: 400 },
+            error: { message: 'The prompt is required.', category: 'validation', status: 400 },
           });
         }
         if (prompt.length > MAX_PROMPT_CHARS) {
           return errorForRequest(400, {
             error: {
-              message: `El prompt no puede superar ${MAX_PROMPT_CHARS} caracteres.`,
+              message: `The prompt cannot exceed ${MAX_PROMPT_CHARS} characters.`,
               category: 'validation',
               status: 400,
             },
@@ -501,7 +503,7 @@ const server = http.createServer((req, res) => {
         if (!ALLOWED_MODELS.includes(model))
           return errorForRequest(400, {
             error: {
-              message: `Modelo no soportado: ${model}`,
+              message: `Unsupported model: ${model}`,
               category: 'validation',
               status: 400,
             },
@@ -510,7 +512,7 @@ const server = http.createServer((req, res) => {
         if (!Array.isArray(images)) {
           return errorForRequest(400, {
             error: {
-              message: 'Las imágenes de referencia deben enviarse como un array.',
+              message: 'Reference images must be sent as an array.',
               category: 'validation',
               status: 400,
             },
@@ -520,7 +522,7 @@ const server = http.createServer((req, res) => {
         if (images.length > MAX_REFERENCE_IMAGES) {
           return errorForRequest(400, {
             error: {
-              message: `Máximo ${MAX_REFERENCE_IMAGES} imágenes de referencia.`,
+              message: `Maximum ${MAX_REFERENCE_IMAGES} reference images.`,
               category: 'validation',
               status: 400,
             },
@@ -533,7 +535,7 @@ const server = http.createServer((req, res) => {
           if (!info) {
             return errorForRequest(400, {
               error: {
-                message: 'Las imágenes de referencia deben ser data URLs base64 válidas.',
+                message: 'Reference images must be valid base64 data URLs.',
                 category: 'validation',
                 status: 400,
               },
@@ -558,18 +560,18 @@ const server = http.createServer((req, res) => {
           generateText = ai.generateText;
           createGateway = ai.createGateway;
           if (!generateImage) {
-            throw new Error('La versión instalada de ai no expone generateImage.');
+            throw new Error('The installed ai package version does not expose generateImage.');
           }
           if (!generateText) {
-            throw new Error('La versión instalada de ai no expone generateText.');
+            throw new Error('The installed ai package version does not expose generateText.');
           }
           if (!createGateway) {
-            throw new Error('La versión instalada de ai no expone createGateway.');
+            throw new Error('The installed ai package version does not expose createGateway.');
           }
         } catch (err) {
           return errorForRequest(500, {
             error: {
-              message: 'Falta instalar la dependencia del AI SDK. Ejecutá npm install antes de iniciar el servidor.',
+              message: 'The AI SDK dependency is missing. Run npm install before starting the server.',
               category: 'missing_dependency',
               status: 500,
               raw: err.message,
@@ -601,7 +603,7 @@ const server = http.createServer((req, res) => {
         if (resultImages.length === 0) {
           return errorForRequest(502, {
             error: {
-              message: 'El gateway respondió correctamente, pero no devolvió imágenes.',
+              message: 'The gateway responded successfully, but did not return images.',
               category: 'empty_response',
               status: 502,
               warnings: result.warnings || [],
@@ -617,7 +619,7 @@ const server = http.createServer((req, res) => {
       } catch (err) {
         errorForRequest(500, {
           error: {
-            message: 'No se pudo completar la generación.',
+            message: 'The generation could not be completed.',
             category: 'server_error',
             status: 500,
             raw: err.message,
@@ -633,13 +635,13 @@ const server = http.createServer((req, res) => {
 
 server.on('error', (err) => {
   if (err.code === 'EADDRINUSE') {
-    console.error(`❌ El puerto ${PORT} ya está en uso.`);
+    console.error(`Port ${PORT} is already in use.`);
   } else if (err.code === 'EPERM') {
-    console.error(`❌ No hay permisos para escuchar en http://${HOST}:${PORT}.`);
+    console.error(`No permission to listen on http://${HOST}:${PORT}.`);
   } else {
-    console.error('❌ No se pudo iniciar el servidor:', err.message);
+    console.error('Could not start the server:', err.message);
   }
   process.exit(1);
 });
 
-server.listen(PORT, HOST, () => console.log(`✅ Servidor en http://${HOST}:${PORT}`));
+server.listen(PORT, HOST, () => console.log(`Server running at http://${HOST}:${PORT}`));

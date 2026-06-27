@@ -1,21 +1,79 @@
 <!doctype html>
-<html lang="es" class="dark">
+<html lang="en" class="dark">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>AI Image Playground</title>
+    <title>AI Image Generator Playground | Compare GPT and Gemini Models</title>
+    <meta
+      name="description"
+      content="Generate, edit, and compare AI images across GPT Image, Gemini, and future image providers from one multi-model playground."
+    />
+    <meta
+      name="keywords"
+      content="ai image generator, ai image playground, generate ai image, GPT image generator, Gemini image generator, multi model image generator"
+    />
+    <meta name="robots" content="index, follow, max-image-preview:large" />
+    <meta name="author" content="AI Image Playground" />
+    <meta name="application-name" content="AI Image Playground" />
+    <meta name="theme-color" content="#0a0a0a" />
+    <meta name="color-scheme" content="dark" />
+    <meta name="referrer" content="strict-origin-when-cross-origin" />
+    <meta name="format-detection" content="telephone=no" />
+    <link rel="canonical" href="__SITE_URL__/" />
+    <link rel="alternate" hreflang="en" href="__SITE_URL__/" />
+    <link rel="alternate" hreflang="es" href="__SITE_URL__/es/" />
+    <link rel="alternate" hreflang="x-default" href="__SITE_URL__/" />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="AI Image Playground" />
+    <meta property="og:title" content="AI Image Generator Playground" />
+    <meta
+      property="og:description"
+      content="Generate and compare images across GPT Image, Gemini, and future AI image providers in one workflow."
+    />
+    <meta property="og:url" content="__SITE_URL__/" />
+    <meta property="og:locale" content="en_US" />
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content="AI Image Generator Playground" />
+    <meta
+      name="twitter:description"
+      content="A multi-model AI image generator playground for GPT Image, Gemini, and future providers."
+    />
     <script>
       window.APP_CONFIG = {
         gaMeasurementId: '__GA_MEASUREMENT_ID__',
+        siteUrl: '__SITE_URL__',
       };
+    </script>
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "WebApplication",
+        "name": "AI Image Playground",
+        "alternateName": "AI Image Generator Playground",
+        "url": "__SITE_URL__/",
+        "applicationCategory": "DesignApplication",
+        "operatingSystem": "Web",
+        "description": "Generate, edit, and compare AI images across GPT Image, Gemini, and future image providers from one multi-model playground.",
+        "featureList": [
+          "AI image generation",
+          "Multi-model image comparison",
+          "Reference image editing",
+          "Aspect ratio and quality controls",
+          "Local prompt and image history"
+        ],
+        "offers": {
+          "@type": "Offer",
+          "price": "0",
+          "priceCurrency": "USD"
+        }
+      }
     </script>
     <script src="https://cdn.tailwindcss.com"></script>
   </head>
   <body class="bg-neutral-950 text-neutral-200 min-h-screen font-sans">
     <div class="max-w-5xl mx-auto p-4 md:p-8 space-y-6">
-      <!-- ── Header + API Key ── -->
       <header class="flex flex-col md:flex-row md:items-center justify-between gap-3">
-        <h1 class="text-xl font-semibold text-white">🎨 AI Image Playground</h1>
+        <h1 class="text-xl font-semibold text-white">AI Image Generator Playground</h1>
         <div class="flex gap-2">
           <input
             id="apiKey"
@@ -23,14 +81,12 @@
             placeholder="Vercel AI Gateway API Key"
             class="bg-neutral-900 border border-neutral-800 rounded-lg px-3 py-2 text-sm w-72 focus:outline-none focus:border-neutral-600"
           />
-          <button id="saveKey" class="bg-neutral-800 hover:bg-neutral-700 rounded-lg px-4 py-2 text-sm">Guardar</button>
+          <button id="saveKey" class="bg-neutral-800 hover:bg-neutral-700 rounded-lg px-4 py-2 text-sm">Save</button>
         </div>
       </header>
 
       <div class="grid md:grid-cols-2 gap-6">
-        <!-- ── Panel de configuración ── -->
         <section class="bg-neutral-900 border border-neutral-800 rounded-2xl p-5 space-y-5 h-fit">
-          <!-- Imágenes de referencia -->
           <div>
             <input id="fileInput" type="file" accept="image/*" multiple class="hidden" />
             <div class="flex items-center gap-2 flex-wrap">
@@ -51,13 +107,12 @@
               id="prompt"
               rows="4"
               maxlength="5000"
-              placeholder="Un ciberpunk astronauta en las calles de Kyoto con luces de neón y lluvia..."
+              placeholder="A cyberpunk astronaut walking through neon-lit Kyoto streets in the rain..."
               class="w-full bg-neutral-950 border border-neutral-800 rounded-xl p-3 pr-20 text-sm resize-none focus:outline-none focus:border-neutral-600"
             ></textarea>
             <span id="promptCount" class="absolute top-2 right-3 text-xs text-neutral-500">0/5000</span>
           </div>
 
-          <!-- Modelo -->
           <div class="flex items-center gap-2">
             <select id="model" class="bg-neutral-800 rounded-full px-4 py-2 text-sm focus:outline-none flex-1">
               <option value="openai/gpt-image-2">GPT Image 2</option>
@@ -69,11 +124,10 @@
               type="button"
               class="bg-neutral-800 hover:bg-neutral-700 rounded-full px-4 py-2 text-sm text-neutral-200"
             >
-              Opciones avanzadas
+              Advanced options
             </button>
           </div>
 
-          <!-- Opciones -->
           <div id="advancedPanel" class="space-y-4 text-sm hidden">
             <div class="flex items-center justify-between">
               <span class="text-neutral-400">Aspect Ratio</span>
@@ -85,7 +139,7 @@
               </div>
             </div>
             <div class="flex items-center justify-between">
-              <span class="text-neutral-400">Output Count</span>
+              <span class="text-neutral-400">Output count</span>
               <div id="count" class="flex bg-neutral-800 rounded-full p-1" data-value="1">
                 <button data-v="1" class="pill">1</button>
                 <button data-v="2" class="pill">2</button>
@@ -107,25 +161,23 @@
             id="generate"
             class="w-full bg-white text-black font-medium rounded-xl py-3 hover:bg-neutral-200 disabled:opacity-40 disabled:cursor-not-allowed transition"
           >
-            Generar
+            Generate
           </button>
           <p id="error" class="text-red-400 text-sm hidden"></p>
         </section>
 
-        <!-- ── Resultados ── -->
         <section>
           <div id="results" class="grid grid-cols-2 gap-3"></div>
-          <p id="empty" class="text-center py-20 text-neutral-600 text-sm">Las imágenes generadas aparecerán aquí</p>
+          <p id="empty" class="text-center py-20 text-neutral-600 text-sm">Generated images will appear here</p>
         </section>
       </div>
     </div>
 
-    <!-- ── Modal de imagen ── -->
     <div id="imageModal" class="fixed inset-0 z-50 hidden bg-black/90 p-3 md:p-6">
       <button
         id="closeModal"
         class="fixed top-4 right-4 z-10 bg-white text-black rounded-full w-10 h-10 text-xl leading-none hover:bg-neutral-200"
-        aria-label="Cerrar imagen"
+        aria-label="Close image"
       >
         ×
       </button>
@@ -138,14 +190,14 @@
           >
             <img
               id="modalImage"
-              alt="Imagen generada ampliada"
+              alt="Generated image preview"
               class="max-h-[46vh] md:max-h-[76vh] max-w-full rounded-xl border border-neutral-800 object-contain bg-neutral-900"
             />
           </div>
           <aside class="min-h-0 border-t md:border-t-0 md:border-l border-neutral-800 flex flex-col">
             <div class="min-h-0 overflow-y-auto p-4 md:p-5 space-y-5">
               <div class="space-y-2">
-                <p class="text-xs uppercase text-neutral-500">Modelo</p>
+                <p class="text-xs uppercase text-neutral-500">Model</p>
                 <p id="modalModel" class="text-sm font-medium text-white"></p>
               </div>
               <div class="space-y-2">
@@ -158,15 +210,15 @@
                   <dd id="modalAspectRatio" class="mt-1 text-white"></dd>
                 </div>
                 <div>
-                  <dt class="text-xs uppercase text-neutral-500">Calidad</dt>
+                  <dt class="text-xs uppercase text-neutral-500">Quality</dt>
                   <dd id="modalQuality" class="mt-1 text-white"></dd>
                 </div>
                 <div>
-                  <dt class="text-xs uppercase text-neutral-500">Resolución</dt>
+                  <dt class="text-xs uppercase text-neutral-500">Resolution</dt>
                   <dd id="modalResolution" class="mt-1 text-white"></dd>
                 </div>
                 <div>
-                  <dt class="text-xs uppercase text-neutral-500">Tamaño</dt>
+                  <dt class="text-xs uppercase text-neutral-500">Size</dt>
                   <dd id="modalSize" class="mt-1 text-white"></dd>
                 </div>
               </dl>
@@ -174,16 +226,16 @@
             <div class="border-t border-neutral-800 p-4 md:p-5 flex gap-2 justify-end">
               <a
                 id="modalDownload"
-                download="imagen-ia.webp"
+                download="ai-image.webp"
                 class="bg-white text-black rounded-full px-4 py-2 text-sm font-medium hover:bg-neutral-200"
               >
-                Descargar
+                Download
               </a>
               <button
                 id="modalEdit"
                 class="bg-neutral-800 text-white border border-neutral-700 rounded-full px-4 py-2 text-sm font-medium hover:bg-neutral-700"
               >
-                Editar
+                Edit
               </button>
             </div>
           </aside>
@@ -206,8 +258,7 @@
     </style>
 
     <script>
-      // ── Estado ──
-      const refImages = []; // data URLs (máx 3)
+      const refImages = [];
       const MAX_REFS = 5;
       const MAX_HISTORY = 20;
       const MAX_PROMPT_CHARS = 5000;
@@ -283,13 +334,12 @@
         }
       }
 
-      // ── API Key (localStorage) ──
       $('apiKey').value = localStorage.getItem('ai_gw_key') || '';
       $('saveKey').onclick = () => {
         localStorage.setItem('ai_gw_key', $('apiKey').value.trim());
         trackEvent('api_key_saved');
-        $('saveKey').textContent = '✓ Guardada';
-        setTimeout(() => ($('saveKey').textContent = 'Guardar'), 1500);
+        $('saveKey').textContent = 'Saved';
+        setTimeout(() => ($('saveKey').textContent = 'Save'), 1500);
       };
 
       $('advancedToggle').onclick = () => {
@@ -307,7 +357,6 @@
         $('promptCount').classList.toggle('text-neutral-500', count < MAX_PROMPT_CHARS);
       });
 
-      // ── Pills (selector genérico) ──
       document.querySelectorAll('#ratio, #count').forEach((group) => {
         const sync = () =>
           group
@@ -329,7 +378,6 @@
         trackEvent('generation_option_changed', analyticsContext());
       });
 
-      // ── Subida de imágenes de referencia ──
       $('uploadBtn').onclick = () => $('fileInput').click();
       $('fileInput').onchange = (e) => {
         [...e.target.files].forEach((file) => {
@@ -343,7 +391,7 @@
 
       function addRefImage(src) {
         if (refImages.length >= MAX_REFS) {
-          showError(`⚠️ Solo podés usar hasta ${MAX_REFS} imágenes de referencia.`);
+          showError(`You can use up to ${MAX_REFS} reference images.`);
           return false;
         }
         refImages.push(src);
@@ -371,8 +419,6 @@
         trackEvent('reference_image_removed', analyticsContext());
       };
 
-      // ── Aspect ratio + resolución → tamaño "WxH" ──
-      // Usamos la resolución como lado corto para no quedar por debajo del mínimo del proveedor.
       function computeSize(ratio, res) {
         const base = { '1K': 1024, '2K': 2048, '4K': 4096 }[res];
         const [w, h] = ratio.split(':').map(Number);
@@ -384,7 +430,6 @@
         return { low: '1K', medium: '2K', high: '4K' }[quality] || '2K';
       }
 
-      // ── Historial temporal ──
       function openHistoryDb() {
         return new Promise((resolve, reject) => {
           const request = indexedDB.open(DB_NAME, 1);
@@ -432,7 +477,7 @@
           });
           generatedImages.slice(0, MAX_HISTORY).forEach((item) => store.put(item));
         } catch {
-          // El historial en memoria sigue funcionando aunque IndexedDB falle.
+          // In-memory history still works if IndexedDB fails.
         }
       }
 
@@ -444,7 +489,7 @@
         <div class="col-span-2 min-h-72 rounded-xl border border-neutral-800 bg-neutral-900/80 overflow-hidden relative">
           <div class="absolute inset-0 bg-gradient-to-r from-neutral-900 via-neutral-800 to-neutral-900 animate-pulse"></div>
           <div class="absolute inset-0 flex items-center justify-center text-neutral-400 text-sm">
-            Generando imagen...
+            Generating image...
           </div>
         </div>`,
           )
@@ -463,12 +508,12 @@
           <div class="absolute bottom-2 right-2 flex gap-2 opacity-0 group-hover:opacity-100 transition">
             <button type="button" data-edit-image="${escapeAttr(item.id)}"
               class="bg-black/70 px-3 py-1 rounded-lg text-xs">
-              Editar
+              Edit
             </button>
             <a href="${escapeAttr(item.src)}" download="${downloadName(item)}"
               data-download-image="${escapeAttr(item.id)}"
               class="bg-black/70 px-3 py-1 rounded-lg text-xs">
-              ⬇ Descargar
+              Download
             </a>
           </div>
         </div>`,
@@ -510,7 +555,7 @@
 
       function downloadName(item) {
         const stamp = new Date(item.createdAt || Date.now()).toISOString().slice(0, 19).replace(/[:T]/g, '-');
-        return `imagen-ia-${stamp}.webp`;
+        return `ai-image-${stamp}.webp`;
       }
 
       function escapeAttr(value) {
@@ -529,12 +574,12 @@
             'google/gemini-3-pro-image': 'Gemini 3 Pro',
           }[model] ||
           model ||
-          'Modelo desconocido'
+          'Unknown model'
         );
       }
 
       function qualityLabel(quality) {
-        return { low: 'Low', medium: 'Medium', high: 'High' }[quality] || quality || 'No disponible';
+        return { low: 'Low', medium: 'Medium', high: 'High' }[quality] || quality || 'Not available';
       }
 
       function collectOptions() {
@@ -547,17 +592,16 @@
         };
       }
 
-      // ── Generar ──
       $('generate').onclick = async () => {
         const apiKey = localStorage.getItem('ai_gw_key') || $('apiKey').value.trim();
         const prompt = $('prompt').value.trim();
         const errEl = $('error');
         errEl.classList.add('hidden');
 
-        if (!apiKey) return showError('⚠️ Ingresá tu API Key para poder generar imágenes.');
-        if (!prompt) return showError('⚠️ Escribí un prompt.');
+        if (!apiKey) return showError('Enter your API key to generate images.');
+        if (!prompt) return showError('Write a prompt.');
         if (prompt.length > MAX_PROMPT_CHARS) {
-          return showError(`⚠️ El prompt no puede superar ${MAX_PROMPT_CHARS} caracteres.`);
+          return showError(`The prompt cannot exceed ${MAX_PROMPT_CHARS} characters.`);
         }
 
         $('generate').disabled = true;
@@ -588,7 +632,7 @@
             }),
           });
           const data = await r.json();
-          if (!r.ok) throw data.error || new Error('Error desconocido');
+          if (!r.ok) throw data.error || new Error('Unknown error');
           addGeneratedImages(data.images || [], { prompt, model, aspectRatio, quality, resolution, size });
           trackEvent('generate_success', {
             ...analyticsContext(),
@@ -617,22 +661,21 @@
       }
 
       function formatError(err) {
-        if (typeof err === 'string') return '❌ ' + err;
-        const message = err?.message || 'Error desconocido';
-        const parts = [`❌ ${message}`];
+        if (typeof err === 'string') return err;
+        const message = err?.message || 'Unknown error';
+        const parts = [message];
         if (err?.category === 'safety') {
           if (err?.requestId) parts.push(`ID: ${err.requestId}`);
           if (Array.isArray(err?.violations) && err.violations.length) {
-            parts.push(`Motivo: ${err.violations.join(', ')}`);
+            parts.push(`Reason: ${err.violations.join(', ')}`);
           }
           return parts.join(' ');
         }
         if (err?.requestId) parts.push(`ID: ${err.requestId}`);
-        if (err?.raw && err.raw !== message) parts.push(`Detalle: ${err.raw}`);
+        if (err?.raw && err.raw !== message) parts.push(`Details: ${err.raw}`);
         return parts.join(' ');
       }
 
-      // ── Modal ──
       $('results').addEventListener('click', (e) => {
         const editor = e.target.closest('[data-edit-image]');
         if (editor) {
@@ -657,11 +700,11 @@
         $('modalDownload').href = item.src;
         $('modalDownload').download = downloadName(item);
         $('modalModel').textContent = modelLabel(item.model);
-        $('modalPrompt').textContent = item.prompt || 'No disponible';
-        $('modalAspectRatio').textContent = item.aspectRatio || 'No disponible';
+        $('modalPrompt').textContent = item.prompt || 'Not available';
+        $('modalAspectRatio').textContent = item.aspectRatio || 'Not available';
         $('modalQuality').textContent = qualityLabel(item.quality);
-        $('modalResolution').textContent = item.resolution || 'No disponible';
-        $('modalSize').textContent = item.size || 'No disponible';
+        $('modalResolution').textContent = item.resolution || 'Not available';
+        $('modalSize').textContent = item.size || 'Not available';
         $('imageModal').classList.remove('hidden');
         document.body.classList.add('overflow-hidden');
         trackEvent('image_modal_opened', analyticsContext());
