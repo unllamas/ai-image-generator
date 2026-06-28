@@ -80,13 +80,13 @@ Future candidates:
 
 The provider table should stay conservative. Only mark a provider as supported when the backend has a working implementation and the UI can route requests to it.
 
-The Tally links currently use this placeholder:
+The Tally links currently use:
 
 ```text
-https://tally.so/r/REPLACE_WITH_FORM_ID
+https://tally.so/r/kdpE8J
 ```
 
-Replace it with the production Tally form URL before launch.
+If the form changes, update the landing CTA and settings/onboarding references together.
 
 Most metadata is written directly in `index.html` because the current product only supports English. The server only injects environment-dependent values:
 
@@ -137,6 +137,30 @@ In production, this becomes:
 ```html
 <link rel="canonical" href="https://ai-image-generator.example.com/" />
 ```
+
+## Functional Query Params
+
+The app supports query params for non-sensitive UI presets and onboarding flows:
+
+```text
+?model=google/gemini-3-pro-image
+?ratio=9:16
+?count=2
+?quality=high
+?advanced=1
+?settings=1
+?access=required#api-key
+```
+
+These params are not SEO landing pages. They should not change the canonical URL, metadata, Open Graph tags, JSON-LD, or language handling.
+
+Rules:
+
+- Use params to initialize UI state, QA links, or campaign defaults.
+- Use analytics events to measure behavior after page load.
+- Validate param values against existing UI options before applying them.
+- Never accept API keys, prompts, reference images, generated images, data URLs, or full request payloads in the URL.
+- Keep the canonical URL pointing to `/` so crawlers do not treat every preset combination as a separate page.
 
 ## Future Localization
 

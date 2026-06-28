@@ -55,22 +55,54 @@ Parametros permitidos:
 | `category` | string | Categoria de error normalizada. |
 | `status` | number | HTTP status del error. |
 | `action` | string | Accion puntual, por ejemplo `open` o `close`. |
+| `control` | string | Control afectado, por ejemplo `model`, `ratio`, `count`, `quality`, `advanced` o `provider`. |
+| `value` | string | Valor normalizado del control afectado. |
+
+### URL Presets
+
+Los query params se usan para inicializar estado no sensible de la UI. No reemplazan a los eventos de analytics y no se actualizan en cada cambio del usuario.
+
+Parametros soportados:
+
+| Parametro | Ejemplo | Efecto |
+| --- | --- | --- |
+| `model` | `?model=google/gemini-3-pro-image` | Selecciona un modelo si existe en la UI. |
+| `ratio` | `?ratio=9:16` | Selecciona aspect ratio si existe en la UI. |
+| `count` | `?count=2` | Selecciona output count si existe en la UI. |
+| `quality` | `?quality=high` | Selecciona calidad si existe en la UI. |
+| `advanced` | `?advanced=1` | Abre el panel avanzado. |
+| `settings` | `?settings=1` | Abre el modal de configuracion. |
+| `access` | `?access=required#api-key` | Lleva a la seccion de opciones de acceso. |
+
+Cuando un preset valido se aplica, el frontend emite `url_preset_applied` con `control` y `value`.
+
+No deben existir presets para API keys, prompts, imagenes de referencia, imagenes generadas, data URLs ni payloads completos.
 
 ### Eventos
 
 | Evento | Cuando ocurre | Parametros esperados |
 | --- | --- | --- |
 | `api_key_saved` | El usuario guarda la API key en localStorage. | Ninguno. |
+| `url_preset_applied` | Un query param valido inicializa un control de UI. | Contexto frontend + `control`, `value`. |
 | `advanced_options_toggle` | El usuario abre o cierra opciones avanzadas. | Contexto frontend + `action`. |
-| `generation_option_changed` | Cambia aspect ratio, cantidad o calidad. | Contexto frontend. |
-| `model_changed` | Cambia el modelo seleccionado. | Contexto frontend. |
+| `generation_option_changed` | Cambia aspect ratio, cantidad o calidad. | Contexto frontend + `control`, `value`. |
+| `model_changed` | Cambia el modelo seleccionado. | Contexto frontend + `control`, `value`. |
+| `provider_changed` | Cambia el provider en settings. | Contexto frontend + `control`, `value`. |
+| `ui_interaction` | Click en un CTA/control marcado con `data-track`. | Contexto frontend + `action`. |
+| `lead_cta_clicked` | Click en CTA externo de captacion. | Contexto frontend + `action`. |
 | `reference_image_added` | Se agrega una imagen de referencia. | Contexto frontend. |
 | `reference_image_removed` | Se elimina una imagen de referencia. | Contexto frontend. |
+| `reference_image_pasted` | Se pega una imagen desde clipboard en el prompt. | Contexto frontend + `image_count`. |
+| `reference_upload_opened` | El usuario abre el selector de imagenes de referencia. | Contexto frontend. |
+| `settings_opened` | Se abre el modal de settings. | Contexto frontend. |
+| `settings_closed` | Se cierra el modal de settings. | Contexto frontend + `action`. |
+| `access_options_prompted` | El usuario intenta generar sin provider/API key y se lo lleva a opciones de acceso. | Contexto frontend. |
 | `generate_start` | Empieza una generacion. | Contexto frontend. |
 | `generate_success` | La generacion termina correctamente. | Contexto frontend + `image_count`, `warnings_count`, `duration_ms`. |
 | `generate_error` | La generacion falla. | Contexto frontend + `category`, `status`. |
 | `image_downloaded` | El usuario descarga una imagen. | Contexto frontend. |
 | `image_modal_opened` | El usuario abre una imagen en modal. | Contexto frontend. |
+| `image_modal_closed` | El usuario cierra el modal de imagen. | Contexto frontend + `action`. |
 | `image_edit_started` | El usuario usa una imagen generada como referencia. | Contexto frontend. |
 
 ### Datos Prohibidos En Frontend Analytics

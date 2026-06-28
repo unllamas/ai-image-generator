@@ -68,6 +68,28 @@ Y para ver los eventos en consola:
 http://127.0.0.1:3000/?analytics_debug=1
 ```
 
+## URL presets
+
+La app acepta parametros no sensibles para inicializar el estado de la UI en enlaces compartidos, campañas o QA. Estos parametros se aplican solo al cargar la pagina; los cambios posteriores del usuario se miden con eventos, no reescribiendo la URL en cada interaccion.
+
+Ejemplo:
+
+```text
+http://127.0.0.1:3000/?model=google/gemini-3-pro-image&ratio=9:16&count=2&quality=high&advanced=1
+```
+
+Parametros soportados:
+
+- `model`: debe existir en el selector de modelos.
+- `ratio`: debe existir en los botones de aspect ratio.
+- `count`: debe existir en los botones de output count.
+- `quality`: debe existir en el selector de calidad.
+- `advanced=1`: abre el panel avanzado.
+- `settings=1`: abre el modal de configuracion.
+- `access=required#api-key`: lleva a la seccion de opciones de acceso.
+
+No se aceptan por URL: API keys, prompts, imagenes de referencia, imagenes generadas, data URLs ni payloads completos.
+
 ## Copy e idioma
 
 La app queda soportada unicamente en ingles. Los textos estaticos viven directamente en `index.html`; los textos dinamicos vinculados a generacion, historial, errores y acciones de imagen viven como constantes en el script del frontend.

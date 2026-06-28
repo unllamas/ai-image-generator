@@ -764,6 +764,87 @@
         }
       }
 
+      function hasSelectOption(selectId, value) {
+        return [...$(selectId).options].some((option) => option.value === value);
+      }
+
+      function setPillGroupValue(groupId, value) {
+        const group = $(groupId);
+        const hasValue = [...group.querySelectorAll('[data-v]')].some((button) => button.dataset.v === value);
+        if (!hasValue) return false;
+        group.dataset.value = value;
+        syncPillGroup(group);
+        return true;
+      }
+
+      function syncPillGroup(group) {
+        group
+          .querySelectorAll('.pill')
+          .forEach((button) => button.classList.toggle('active', button.dataset.v === group.dataset.value));
+      }
+
+      function isEnabledParam(value) {
+        return ['1', 'true', 'yes', 'open'].includes(String(value || '').toLowerCase());
+      }
+
+      function applyUrlPreset(control, value) {
+        if (!value) return false;
+        if (control === 'model' && hasSelectOption('model', value)) {
+          $('model').value = value;
+        } else if (control === 'ratio' && !setPillGroupValue('ratio', value)) {
+          return false;
+        } else if (control === 'count' && !setPillGroupValue('count', value)) {
+          return false;
+        } else if (control === 'quality' && hasSelectOption('quality', value)) {
+          $('quality').value = value;
+        } else {
+          return false;
+        }
+        trackEvent('url_preset_applied', {
+          ...analyticsContext(),
+          control,
+          value,
+        });
+        return true;
+      }
+
+      function applyUrlPresets() {
+        const params = new URLSearchParams(location.search);
+        applyUrlPreset('model', params.get('model'));
+        applyUrlPreset('ratio', params.get('ratio'));
+        applyUrlPreset('count', params.get('count'));
+        applyUrlPreset('quality', params.get('quality'));
+        if (isEnabledParam(params.get('advanced'))) {
+          $('advancedPanel').classList.remove('hidden');
+          trackEvent('url_preset_applied', {
+            ...analyticsContext(),
+            control: 'advanced',
+            value: '1',
+          });
+        }
+      }
+
+      function applyUrlActions() {
+        const params = new URLSearchParams(location.search);
+        if (isEnabledParam(params.get('settings'))) {
+          trackEvent('url_preset_applied', {
+            ...analyticsContext(),
+            control: 'settings',
+            value: '1',
+          });
+          openSettingsModal();
+          return;
+        }
+        if (params.get('access') === 'required' || location.hash === '#api-key') {
+          trackEvent('url_preset_applied', {
+            ...analyticsContext(),
+            control: 'access',
+            value: params.get('access') || 'hash',
+          });
+        }
+        scrollToAccessFromUrl();
+      }
+
       function providerConfig() {
         const apiKey = localStorage.getItem('ai_gw_key') || '';
         return {
@@ -887,21 +968,17 @@
       });
 
       document.querySelectorAll('#ratio, #count').forEach((group) => {
-        const sync = () =>
-          group
-            .querySelectorAll('.pill')
-            .forEach((b) => b.classList.toggle('active', b.dataset.v === group.dataset.value));
         group.addEventListener('click', (e) => {
           if (!e.target.dataset.v) return;
           group.dataset.value = e.target.dataset.v;
-          sync();
+          syncPillGroup(group);
           trackEvent('generation_option_changed', {
             ...analyticsContext(),
             control: group.id,
             value: group.dataset.value,
           });
         });
-        sync();
+        syncPillGroup(group);
       });
 
       $('model').addEventListener('change', () => {
@@ -1413,8 +1490,9 @@
       $('modalDownload').onclick = () => trackEvent('image_downloaded', analyticsContext());
 
       initAnalytics();
+      applyUrlPresets();
       loadHistory();
-      scrollToAccessFromUrl();
+      applyUrlActions();
       $('prompt').dispatchEvent(new Event('input'));
     </script>
   </body>
