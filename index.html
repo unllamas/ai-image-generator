@@ -81,13 +81,30 @@
 
     <!-- CDNs -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
   </head>
-  <body class="bg-neutral-950 text-neutral-200 min-h-screen font-sans">
+  <body class="relative bg-black text-neutral-200 min-h-screen py-20 font-sans">
+    <img
+      src="public/background.webp"
+      alt=""
+      aria-hidden="true"
+      class="absolute -top-10 md:-top-20 inset-0 -z-10 h-auto w-full object-cover opacity-100"
+    />
+    <img
+      src="public/background.webp"
+      alt=""
+      aria-hidden="true"
+      class="absolute bottom-10 md:-bottom-20 -z-10 h-auto w-full object-cover opacity-100 rotate-180"
+    />
+
     <!-- Navbar -->
     <nav class="flex items-center gap-3">
       <div class="flex items-center justify-between w-full max-w-xl h-16 mx-auto px-4">
-        <a href="__SITE_URL__/" class="text-sm font-semibold text-white" data-track="nav_home_clicked"
-          >AI Image Playground</a
+        <a
+          href="__SITE_URL__/"
+          class="flex items-center gap-2 text-lg font-semibold text-white"
+          data-track="nav_home_clicked"
+          ><i data-lucide="image-plus" class="size-6 text-neutral-400"></i> Playground</a
         >
         <div class="flex items-center gap-2">
           <button
@@ -103,11 +120,12 @@
     </nav>
 
     <!-- Hero -->
-    <header class="py-20">
-      <div class="flex flex-col gap-8 w-full max-w-xl mx-auto px-4">
-        <div class="w-full max-w-md mx-auto space-y-2 text-center">
-          <h1 class="text-4xl md:text-6xl font-semibold text-white">AI Image Generator Playground</h1>
-          <p class="mx-auto max-w-2xl text-sm md:text-base leading-7 text-neutral-400">
+    <header class="relative isolate overflow-hidden py-20">
+      <!-- <div class="absolute inset-0 -z-10 bg-gradient-to-b from-neutral-950/55 via-neutral-950/80 to-neutral-950"></div> -->
+      <div class="relative flex flex-col gap-8 w-full max-w-xl mx-auto px-4">
+        <div class="flex flex-col justify-center w-full max-w-md mx-auto space-y-2">
+          <h1 class="text-5xl md:text-7xl font-semibold text-white uppercase text-center">AI Image Generator</h1>
+          <p class="text-sm md:text-base leading-7 text-neutral-400 text-center">
             Generate and compare images across GPT Image, Gemini, and future AI providers in one focused workspace.
           </p>
         </div>
@@ -639,6 +657,9 @@
     </style>
 
     <script>
+      // Initialize Icons
+      lucide.createIcons();
+
       const refImages = [];
       const MAX_REFS = 5;
       const MAX_HISTORY = 20;
@@ -860,16 +881,16 @@
           group
             .querySelectorAll('.pill')
             .forEach((b) => b.classList.toggle('active', b.dataset.v === group.dataset.value));
-          group.addEventListener('click', (e) => {
-            if (!e.target.dataset.v) return;
-            group.dataset.value = e.target.dataset.v;
-            sync();
-            trackEvent('generation_option_changed', {
-              ...analyticsContext(),
-              control: group.id,
-              value: group.dataset.value,
-            });
+        group.addEventListener('click', (e) => {
+          if (!e.target.dataset.v) return;
+          group.dataset.value = e.target.dataset.v;
+          sync();
+          trackEvent('generation_option_changed', {
+            ...analyticsContext(),
+            control: group.id,
+            value: group.dataset.value,
           });
+        });
         sync();
       });
 

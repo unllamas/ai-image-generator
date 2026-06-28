@@ -16,6 +16,17 @@ const MAX_BODY_BYTES = 20 * 1024 * 1024;
 const MAX_REFERENCE_IMAGES = 5;
 const MAX_PROMPT_CHARS = 5000;
 const WEBP_QUALITY = 82;
+const PUBLIC_DIR = path.join(__dirname, 'public');
+const STATIC_TYPES = {
+  '.webp': 'image/webp',
+  '.png': 'image/png',
+  '.jpg': 'image/jpeg',
+  '.jpeg': 'image/jpeg',
+  '.svg': 'image/svg+xml',
+  '.ico': 'image/x-icon',
+  '.css': 'text/css; charset=utf-8',
+  '.js': 'text/javascript; charset=utf-8',
+};
 
 const MODEL_CONFIGS = {
   'openai/gpt-image-2': {
@@ -75,6 +86,28 @@ const serveIndex = (res) => {
     .replace("'__GA_MEASUREMENT_ID__'", JSON.stringify(GA_MEASUREMENT_ID));
   res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
   res.end(html);
+};
+
+const servePublicAsset = (pathname, res) => {
+  const relativePath = decodeURIComponent(pathname.replace(/^\/public\//, ''));
+  const filePath = path.join(PUBLIC_DIR, relativePath);
+  if (!filePath.startsWith(PUBLIC_DIR + path.sep)) {
+    res.writeHead(403);
+    res.end('Forbidden');
+    return true;
+  }
+  if (!fs.existsSync(filePath) || !fs.statSync(filePath).isFile()) {
+    res.writeHead(404);
+    res.end('Not found');
+    return true;
+  }
+  const contentType = STATIC_TYPES[path.extname(filePath).toLowerCase()] || 'application/octet-stream';
+  res.writeHead(200, {
+    'Content-Type': contentType,
+    'Cache-Control': 'public, max-age=31536000, immutable',
+  });
+  fs.createReadStream(filePath).pipe(res);
+  return true;
 };
 
 const safeRequestContext = (payload = {}) => {
@@ -432,6 +465,11 @@ const server = http.createServer((req, res) => {
   // ── Serve front ──
   if (req.method === 'GET' && ['/', '/index.html'].includes(url.pathname)) {
     serveIndex(res);
+    return;
+  }
+
+  if (req.method === 'GET' && url.pathname.startsWith('/public/')) {
+    servePublicAsset(url.pathname, res);
     return;
   }
 
