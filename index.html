@@ -875,6 +875,16 @@
         $('promptCount').classList.toggle('text-red-400', count >= MAX_PROMPT_CHARS);
         $('promptCount').classList.toggle('text-neutral-500', count < MAX_PROMPT_CHARS);
       });
+      $('prompt').addEventListener('paste', (e) => {
+        const imageFiles = filesFromDataTransfer(e.clipboardData).filter((file) => file?.type?.startsWith('image/'));
+        if (!imageFiles.length) return;
+        e.preventDefault();
+        handleReferenceFiles(imageFiles);
+        trackEvent('reference_image_pasted', {
+          ...analyticsContext(),
+          image_count: imageFiles.length,
+        });
+      });
 
       document.querySelectorAll('#ratio, #count').forEach((group) => {
         const sync = () =>
