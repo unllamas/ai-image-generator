@@ -255,7 +255,9 @@
     <section class="">
       <div class="flex flex-col gap-4 w-full max-w-6xl mx-auto px-4">
         <div class="flex items-center justify-between w-full max-w-xl mx-auto">
-          <h2 class="text-sm font-medium text-white">Generated images</h2>
+          <h2 class="text-sm font-medium text-white">
+            Generated images <span id="counts" class="text-xs text-neutral-500">(0)</span>
+          </h2>
           <p id="galleryHint" class="text-xs text-neutral-500">Your latest outputs and experiments</p>
         </div>
         <div id="results" class="columns-2 md:columns-3 gap-3"></div>
@@ -1227,6 +1229,7 @@
           )
           .join('');
         $('results').innerHTML = placeholdersHtml + pendingHtml + imagesHtml;
+        $('counts').textContent = `(${generatedImages.length})`;
       }
 
       function addGeneratedImages(images, meta) {
