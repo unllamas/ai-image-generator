@@ -83,7 +83,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
   </head>
-  <body class="relative bg-black text-neutral-200 min-h-screen py-20 font-sans">
+  <body class="overflow-x-hidden relative min-h-screen py-20 bg-black text-neutral-200 font-sans">
     <img
       src="public/background.webp"
       alt=""
@@ -262,6 +262,7 @@
       </div>
     </section>
 
+    <!-- Landing -->
     <div class="flex flex-col gap-20 w-full max-w-xl mx-auto px-4">
       <!-- Multi-model -->
       <section class="mt-20 pt-20 border-t border-neutral-900">
@@ -498,6 +499,7 @@
       </section>
     </div>
 
+    <!-- Modal / Provider -->
     <div
       id="settingsModal"
       class="fixed inset-0 z-50 hidden bg-black/80 p-4"
@@ -567,6 +569,7 @@
       </div>
     </div>
 
+    <!-- Modal / Preview image -->
     <div id="imageModal" class="fixed inset-0 z-50 hidden bg-black/90 p-3 md:p-6">
       <button
         id="closeModal"
