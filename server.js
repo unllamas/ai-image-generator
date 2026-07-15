@@ -16,6 +16,8 @@ const MAX_BODY_BYTES = 20 * 1024 * 1024;
 const MAX_REFERENCE_IMAGES = 5;
 const MAX_PROMPT_CHARS = 5000;
 const WEBP_QUALITY = 82;
+const REFERENCE_WEBP_QUALITY = 82;
+const MAX_REFERENCE_SIDE = 1600;
 const PUBLIC_DIR = path.join(__dirname, 'public');
 const STATIC_TYPES = {
   '.webp': 'image/webp',
@@ -45,6 +47,8 @@ const MODEL_CONFIGS = {
     supportsSize: false,
     supportsAspectRatio: false,
     usesPromptAspectRatio: true,
+    imageOutputProvider: 'google',
+    supportsImageSize: true,
     supportsProviderOptions: false,
     supportsReferenceImages: true,
   },
@@ -56,6 +60,8 @@ const MODEL_CONFIGS = {
     supportsSize: false,
     supportsAspectRatio: false,
     usesPromptAspectRatio: true,
+    imageOutputProvider: 'google',
+    supportsImageSize: false,
     supportsProviderOptions: false,
     supportsReferenceImages: true,
   },
@@ -66,6 +72,8 @@ const MODEL_CONFIGS = {
     supportsSize: false,
     supportsAspectRatio: false,
     usesPromptAspectRatio: true,
+    imageOutputProvider: 'google',
+    supportsImageSize: false,
     supportsProviderOptions: false,
     supportsReferenceImages: true,
   },
@@ -222,6 +230,32 @@ const dataUrlInfo = (value) => {
   return { mime: match[1], b64: match[2] };
 };
 
+const parseGenerateRequest = async (body, contentType = '') => {
+  if (contentType.toLowerCase().startsWith('multipart/form-data')) {
+    const request = new Request('http://localhost/api/generate', {
+      method: 'POST',
+      headers: { 'content-type': contentType },
+      body,
+    });
+    const form = await request.formData();
+    const payloadValue = form.get('payload');
+    if (typeof payloadValue !== 'string') throw new SyntaxError('Missing multipart payload.');
+    const payload = JSON.parse(payloadValue);
+    const images = [];
+
+    for (const entry of form.getAll('images')) {
+      if (!entry || typeof entry.arrayBuffer !== 'function' || !entry.type?.startsWith('image/')) {
+        throw new TypeError('Reference images must be valid image files.');
+      }
+      images.push({ buffer: Buffer.from(await entry.arrayBuffer()), mime: entry.type });
+    }
+
+    return { payload, uploadedImages: images };
+  }
+
+  return { payload: JSON.parse(body.toString('utf8')), uploadedImages: null };
+};
+
 const sanitizeOptions = (options) => {
   if (!options || typeof options !== 'object' || Array.isArray(options)) return {};
   const blocked = new Set(['model', 'prompt', 'apiKey', 'images']);
@@ -265,6 +299,36 @@ const targetSizeFromAspectRatio = (aspectRatio, shortSide = 2048) => {
 };
 
 const outputTarget = (size, aspectRatio) => parseSize(size) || targetSizeFromAspectRatio(aspectRatio);
+
+const imageSizeFromDimensions = (size) => {
+  const dimensions = parseSize(size);
+  if (!dimensions) return undefined;
+  const shortSide = Math.min(dimensions.width, dimensions.height);
+  if (shortSide >= 3072) return '4K';
+  if (shortSide >= 1536) return '2K';
+  return '1K';
+};
+
+const optimizeReferenceImage = async (input) => {
+  const sharp = (await import('sharp')).default;
+  const metadata = await sharp(input).metadata();
+  const largestSide = Math.max(metadata.width || 1, metadata.height || 1);
+  const shouldResize = largestSide > MAX_REFERENCE_SIDE;
+  return sharp(input)
+    .rotate()
+    .resize(
+      shouldResize
+        ? {
+            width: MAX_REFERENCE_SIDE,
+            height: MAX_REFERENCE_SIDE,
+            fit: 'inside',
+            withoutEnlargement: true,
+          }
+        : undefined,
+    )
+    .webp({ quality: REFERENCE_WEBP_QUALITY })
+    .toBuffer();
+};
 
 const withOutputTarget = async (sharpInput, target) => {
   if (!target) return sharpInput.webp({ quality: WEBP_QUALITY }).toBuffer();
@@ -334,6 +398,36 @@ const resolveMaybePromise = async (value) => value;
 
 const normalizeUsage = async (result = {}) => (await resolveMaybePromise(result.usage || result.totalUsage)) || null;
 
+const summarizeMultimodalResult = async (result = {}) => {
+  const files = (await resolveMaybePromise(result.files)) || [];
+  const content = (await resolveMaybePromise(result.content)) || [];
+  const providerMetadata = (await resolveMaybePromise(result.providerMetadata)) || {};
+  return {
+    finishReason: (await resolveMaybePromise(result.finishReason)) || '',
+    rawFinishReason: (await resolveMaybePromise(result.rawFinishReason)) || '',
+    contentTypes: Array.isArray(content) ? content.map((part) => part?.type || 'unknown') : [],
+    fileCount: Array.isArray(files) ? files.length : 0,
+    fileMediaTypes: Array.isArray(files) ? files.map((file) => file?.mediaType || '') : [],
+    textLength: typeof result.text === 'string' ? result.text.length : 0,
+    generationId: providerMetadata?.gateway?.generationId || '',
+  };
+};
+
+const multimodalProviderOptions = (modelConfig, aspectRatio, size) => {
+  if (modelConfig.imageOutputProvider !== 'google') return undefined;
+  return {
+    google: {
+      responseModalities: ['IMAGE'],
+      imageConfig: {
+        ...(parseAspectRatio(aspectRatio) ? { aspectRatio } : {}),
+        ...(modelConfig.supportsImageSize && imageSizeFromDimensions(size)
+          ? { imageSize: imageSizeFromDimensions(size) }
+          : {}),
+      },
+    },
+  };
+};
+
 const generateImageOnly = async ({
   gateway,
   generateImage,
@@ -373,6 +467,7 @@ const generateMultimodalFiles = async ({
   const allFiles = [];
   const warnings = [];
   const usages = [];
+  const diagnostics = [];
   const modelPrompt = modelConfig.usesPromptAspectRatio ? promptWithAspectRatio(prompt, aspectRatio, size) : prompt;
 
   for (let i = 0; i < count; i++) {
@@ -383,18 +478,21 @@ const generateMultimodalFiles = async ({
     const result = await generateText({
       model: gateway.languageModel(modelConfig.gatewayModel),
       ...buildMultimodalPrompt(promptForCall, referenceImages),
+      providerOptions: multimodalProviderOptions(modelConfig, aspectRatio, size),
       maxRetries: 1,
     });
     allFiles.push(...((await resolveMaybePromise(result.files)) || []));
     const resultWarnings = (await resolveMaybePromise(result.warnings)) || [];
     if (Array.isArray(resultWarnings)) warnings.push(...resultWarnings);
     usages.push(await normalizeUsage(result));
+    diagnostics.push(await summarizeMultimodalResult(result));
   }
 
   return {
     files: allFiles,
     usage: usages.length === 1 ? usages[0] : usages,
     warnings,
+    diagnostics,
   };
 };
 
@@ -481,15 +579,18 @@ const server = http.createServer((req, res) => {
 
   // ── Generation endpoint ──
   if (req.method === 'POST' && url.pathname === '/api/generate') {
-    let body = '';
+    const chunks = [];
+    let bodyBytes = 0;
     let tooLarge = false;
     req.on('data', (chunk) => {
       if (tooLarge) return;
-      body += chunk;
-      if (Buffer.byteLength(body) > MAX_BODY_BYTES) {
+      bodyBytes += chunk.length;
+      if (bodyBytes > MAX_BODY_BYTES) {
         tooLarge = true;
-        body = '';
+        chunks.length = 0;
+        return;
       }
+      chunks.push(chunk);
     });
     req.on('end', async () => {
       const requestStartedAt = Date.now();
@@ -512,12 +613,16 @@ const server = http.createServer((req, res) => {
         }
 
         let parsed;
+        let uploadedImages;
         try {
-          parsed = JSON.parse(body);
+          ({ payload: parsed, uploadedImages } = await parseGenerateRequest(
+            Buffer.concat(chunks),
+            req.headers['content-type'] || '',
+          ));
         } catch {
           return errorForRequest(400, {
             error: {
-              message: 'The request body is not valid JSON.',
+              message: 'The request body is not valid JSON or multipart form data.',
               category: 'bad_json',
               status: 400,
             },
@@ -525,7 +630,8 @@ const server = http.createServer((req, res) => {
         }
 
         const { apiKey, model, prompt, size, aspectRatio, n = 1, images = [], options = {} } = parsed;
-        requestContext = safeRequestContext(parsed);
+        const submittedImages = uploadedImages || images;
+        requestContext = safeRequestContext({ ...parsed, images: submittedImages });
 
         if (!apiKey) {
           return errorForRequest(401, {
@@ -555,7 +661,7 @@ const server = http.createServer((req, res) => {
             },
           });
 
-        if (!Array.isArray(images)) {
+        if (!Array.isArray(submittedImages)) {
           return errorForRequest(400, {
             error: {
               message: 'Reference images must be sent as an array.',
@@ -565,7 +671,7 @@ const server = http.createServer((req, res) => {
           });
         }
 
-        if (images.length > MAX_REFERENCE_IMAGES) {
+        if (submittedImages.length > MAX_REFERENCE_IMAGES) {
           return errorForRequest(400, {
             error: {
               message: `Maximum ${MAX_REFERENCE_IMAGES} reference images.`,
@@ -576,20 +682,21 @@ const server = http.createServer((req, res) => {
         }
 
         const referenceImages = [];
-        for (const image of images) {
-          const info = dataUrlInfo(image);
-          if (!info) {
+        for (const image of submittedImages) {
+          const info = uploadedImages ? image : dataUrlInfo(image);
+          if (!info?.buffer && !info?.b64) {
             return errorForRequest(400, {
               error: {
-                message: 'Reference images must be valid base64 data URLs.',
+                message: 'Reference images must be valid image files or base64 data URLs.',
                 category: 'validation',
                 status: 400,
               },
             });
           }
+          const optimized = await optimizeReferenceImage(info.buffer || Buffer.from(info.b64, 'base64'));
           referenceImages.push({
-            buffer: Buffer.from(info.b64, 'base64'),
-            mime: info.mime,
+            buffer: optimized,
+            mime: 'image/webp',
           });
         }
 
@@ -647,6 +754,10 @@ const server = http.createServer((req, res) => {
 
         const resultImages = (await collectGeneratedFiles(result.files, outputTarget(size, aspectRatio))).slice(0, count);
         if (resultImages.length === 0) {
+          requestContext = {
+            ...requestContext,
+            responseDiagnostics: result.diagnostics || [],
+          };
           return errorForRequest(502, {
             error: {
               message: 'The gateway responded successfully, but did not return images.',

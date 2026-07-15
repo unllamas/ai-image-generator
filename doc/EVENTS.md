@@ -92,6 +92,7 @@ No deben existir presets para API keys, prompts, imagenes de referencia, imagene
 | `lead_cta_clicked` | Click en CTA externo de captacion. | Contexto frontend + `action`. |
 | `reference_image_added` | Se agrega una imagen de referencia. | Contexto frontend. |
 | `reference_image_removed` | Se elimina una imagen de referencia. | Contexto frontend. |
+| `reference_image_rejected` | Una referencia no puede procesarse o supera el limite local. | Contexto frontend + `category`. |
 | `reference_image_pasted` | Se pega una imagen desde clipboard en el prompt. | Contexto frontend + `image_count`. |
 | `reference_upload_opened` | El usuario abre el selector de imagenes de referencia. | Contexto frontend. |
 | `settings_opened` | Se abre el modal de settings. | Contexto frontend. |
@@ -181,6 +182,14 @@ Campos permitidos:
 - `quality`
 - `outputFormat`
 - `durationMs`
+- `responseDiagnostics` solo ante una respuesta multimodal vacia:
+  - `finishReason`
+  - `rawFinishReason`
+  - `contentTypes`
+  - `fileCount`
+  - `fileMediaTypes`
+  - `textLength`
+  - `generationId` de AI Gateway
 
 Campos prohibidos:
 

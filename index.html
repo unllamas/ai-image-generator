@@ -669,6 +669,7 @@
       const MAX_REFS = 5;
       const MAX_HISTORY = 20;
       const MAX_PROMPT_CHARS = 5000;
+      const MAX_GENERATE_REQUEST_BYTES = 20 * 1024 * 1024;
       const DB_NAME = 'ai_image_playground';
       const DB_STORE = 'generated_images';
       const DEFAULT_PROVIDER = 'vercel-ai-gateway';
@@ -688,6 +689,7 @@
         },
         errors: {
           maxReferences: (max) => `You can use up to ${max} reference images.`,
+          requestTooLarge: 'The request is too large. Remove or reduce reference images and try again.',
           emptyPrompt: 'Write a prompt.',
           promptTooLong: (max) => `The prompt cannot exceed ${max} characters.`,
           unknown: 'Unknown error',
@@ -1018,13 +1020,27 @@
         e.target.value = '';
       };
 
-      function handleReferenceFiles(files) {
+      async function handleReferenceFiles(files) {
         const imageFiles = [...files].filter((file) => file?.type?.startsWith('image/'));
         if (!imageFiles.length) return;
-        imageFiles.forEach((file) => {
+        for (const file of imageFiles) {
           if (refImages.length >= MAX_REFS) return;
+          try {
+            addRefImage(await readFileAsDataUrl(file));
+          } catch {
+            trackEvent('reference_image_rejected', {
+              ...analyticsContext(),
+              category: 'reference_read_failed',
+            });
+          }
+        }
+      }
+
+      function readFileAsDataUrl(file) {
+        return new Promise((resolve, reject) => {
           const reader = new FileReader();
-          reader.onload = () => addRefImage(reader.result);
+          reader.onload = () => resolve(reader.result);
+          reader.onerror = () => reject(reader.error);
           reader.readAsDataURL(file);
         });
       }
@@ -1343,6 +1359,51 @@
         };
       }
 
+      async function parseGenerateResponse(response) {
+        const text = await response.text();
+        if (!text) return {};
+        try {
+          return JSON.parse(text);
+        } catch {
+          const message =
+            response.status === 413 || text.toLowerCase().includes('request entity too large')
+              ? COPY.errors.requestTooLarge
+              : text.slice(0, 240);
+          return {
+            error: {
+              message,
+              category: 'non_json_response',
+              status: response.status,
+              raw: text.slice(0, 500),
+            },
+          };
+        }
+      }
+
+      async function buildGenerateRequest(payload) {
+        if (refImages.length === 0) {
+          const body = JSON.stringify({ ...payload, images: [] });
+          return {
+            body,
+            headers: { 'Content-Type': 'application/json' },
+            bytes: new Blob([body]).size,
+          };
+        }
+
+        const form = new FormData();
+        const metadata = JSON.stringify({ ...payload, images: [] });
+        form.append('payload', metadata);
+        let bytes = new Blob([metadata]).size;
+
+        for (const [index, source] of refImages.entries()) {
+          const image = await (await fetch(source)).blob();
+          form.append('images', image, `reference-${index + 1}`);
+          bytes += image.size;
+        }
+
+        return { body: form, headers: {}, bytes };
+      }
+
       $('generate').onclick = async () => {
         const config = providerConfig();
         const apiKey = config.apiKey;
@@ -1369,23 +1430,33 @@
           const resolution = qualityToResolution(quality);
           const size = computeSize(aspectRatio, resolution);
           const startedAt = performance.now();
+          const payload = {
+            apiKey,
+            model,
+            prompt,
+            size,
+            aspectRatio,
+            n: Number($('count').dataset.value),
+            options: collectOptions(),
+          };
+          const request = await buildGenerateRequest(payload);
+          if (request.bytes > MAX_GENERATE_REQUEST_BYTES) {
+            showError(COPY.errors.requestTooLarge);
+            trackEvent('generate_error', {
+              ...analyticsContext(),
+              category: 'payload_too_large',
+              status: 413,
+            });
+            return;
+          }
           addPending(requestedCount);
           trackEvent('generate_start', analyticsContext());
           const r = await fetch('/api/generate', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              apiKey,
-              model,
-              prompt,
-              size,
-              aspectRatio,
-              n: Number($('count').dataset.value),
-              images: refImages,
-              options: collectOptions(),
-            }),
+            headers: request.headers,
+            body: request.body,
           });
-          const data = await r.json();
+          const data = await parseGenerateResponse(r);
           if (!r.ok) throw data.error || new Error(COPY.errors.unknown);
           addGeneratedImages(data.images || [], { prompt, model, aspectRatio, quality, resolution, size });
           trackEvent('generate_success', {

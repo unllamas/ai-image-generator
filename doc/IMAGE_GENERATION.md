@@ -35,6 +35,8 @@ The user supplies their own Vercel AI Gateway API key. The key is sent only with
 | `google/gemini-3-pro-image` | `google/gemini-3-pro-image` | `generateText` / multimodal files | `result.files` |
 | `google/gemini-3.1-flash-image` | `google/gemini-3.1-flash-image-preview` | `generateText` / multimodal files | `result.files` |
 
+Gemini image adapters explicitly request `responseModalities: ['IMAGE']`. They also pass the selected aspect ratio through `providerOptions.google.imageConfig.aspectRatio`; Gemini 3 Pro receives `imageSize` (`1K`, `2K`, or `4K`) derived from the requested resolution.
+
 ## Generation Types
 
 ### Text To Image
@@ -54,6 +56,9 @@ The user can upload generated or external images as references.
 
 Reference image behavior:
 
+- The frontend only reads image files and sends them as reference data URLs.
+- The backend converts every reference image to WebP at 82% quality before calling the provider.
+- Backend reference optimization is the source of truth because provider payload shape belongs at the server boundary.
 - OpenAI image-only models receive image buffers in the image prompt.
 - Gemini multimodal models receive image parts in the message content.
 
@@ -94,9 +99,77 @@ All generated images are converted to WebP:
 
 ```text
 WEBP_QUALITY = 82
+REFERENCE_WEBP_QUALITY = 82
 ```
 
-The backend filters multimodal files to process image files only.
+The backend filters multimodal files to process image files only. Reference images are also normalized to WebP before being sent to the model/provider adapter.
+
+## Known Gemini 3 Pro Failure Modes
+
+These notes capture current debugging context for later fixes.
+
+### Non-JSON Request Entity Error
+
+Observed frontend error:
+
+```text
+Unexpected token 'R', "Request En"... is not valid JSON
+```
+
+Current hypothesis:
+
+- The request includes prompt plus multiple reference images.
+- The JSON payload becomes too large after base64 encoding.
+- A server, proxy, or runtime layer returns plain text such as `Request Entity Too Large`.
+- The frontend attempts to parse that text with `response.json()`.
+
+Likely fixes:
+
+- Optimize reference images in the backend before calling the provider.
+- Send reference images as binary multipart files so Base64 does not inflate the request before backend optimization.
+- Keep a frontend total request preflight only to avoid sending requests that the current runtime cannot accept.
+- Parse non-JSON responses defensively and surface a human-readable error.
+- Align frontend payload limits with the real hosting/runtime limit.
+
+### Empty Gemini 3 Pro Image Response
+
+Observed backend error:
+
+```text
+The gateway responded successfully, but did not return images.
+```
+
+This maps to backend category:
+
+```text
+empty_response
+```
+
+Current hypothesis:
+
+- Vercel AI Gateway returns a successful SDK response for `google/gemini-3-pro-image`.
+- The response does not contain image files in `result.files`, or the returned files are not image media.
+- The model may be returning text, warnings, safety metadata, or a response shape different from `google/gemini-3.1-flash-image-preview`.
+- Backend diagnostics record only response structure (`finishReason`, content types, file count/media types and Gateway generation ID). Prompt text and image contents are never logged.
+- Reference images, prompt wording, or output instructions may cause Gemini 3 Pro to answer without generating an image.
+
+Information to inspect next:
+
+- Raw SDK result shape without logging user prompt, API key, reference images, generated images, or base64.
+- Whether `result.files` exists and its file count.
+- Each file `mediaType`.
+- Warning count and warning categories.
+- Usage metadata.
+- Whether the issue happens only with references or also text-to-image.
+- Whether lowering output count to `1` changes behavior.
+- Whether a more explicit image-generation instruction changes behavior.
+
+Likely fixes:
+
+- Add safe debug logging for Gemini multimodal responses: file count, media types, warning count, and usage only.
+- Add a model-specific fallback message when Gemini Pro returns no image files.
+- Consider using a different strategy or direct provider adapter if Gateway exposes Gemini Pro image output differently.
+- Validate Gemini Pro reference-image support separately from Gemini Flash.
 
 ## Model Registry
 
